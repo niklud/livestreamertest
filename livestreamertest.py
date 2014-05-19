@@ -106,7 +106,6 @@ class Channel(threading.Thread):
 
             if quality in keys:  #start or ignore stream
                 if not warned:
-                    print threadID
                     ChannelParser.prev_start = threadID
                 if not threadID in ChannelParser.streaming:
                     ChannelParser.streaming.append(threadID)
