@@ -45,12 +45,12 @@ class Channel(threading.Thread):
             warningLevel = int(config.get(str(threadID), 'warning level'))
             wait = int(config.get(str(threadID), 'wait'))
             quality = config.get(str(threadID), 'quality')
-            if ChannelParser.startStream == str(threadID):
+            if ChannelParser.startStream == threadID:
                 startStream = 1
                 giveMeAChance = 1
                 sleep = 0
                 ChannelParser.startStream = -1
-            if ChannelParser.endStream == str(threadID):
+            if ChannelParser.endStream == threadID:
                 startStream = 0
                 ChannelParser.endStream = -1
                 if (warningLevel == 2):
@@ -105,12 +105,16 @@ class Channel(threading.Thread):
                 streaming = 1
 
             if quality in keys:  #start or ignore stream
+                if not warned:
+                    print threadID
+                    ChannelParser.prev_start = threadID
                 if not threadID in ChannelParser.streaming:
                     ChannelParser.streaming.append(threadID)
                 warnedQuality = 0
                 if warningLevel > 1 or startStream:
                     args = channel + ' ', quality
                     st = datetime.datetime.now().strftime('%H:%M')
+                    ChannelParser.prev_enabled = threadID
                     print '[' + st + '] starting stream: ' + str(threadID) + ', ' + channel
                     livestreamerProcess = Popen(['livestreamer.exe', args])
                     livestreamerProcess.wait()
@@ -157,6 +161,8 @@ class ChannelParser:
     endStream = -1
     streaming = []
     printLevel = 0
+    prev_start = -1
+    prev_enabled = -1
 
 
     @staticmethod
@@ -305,14 +311,20 @@ class BasicIO(threading.Thread):
             rest = line[1:]
             if wordOne == 'start' or wordOne == 'enable':
                 if len(line) > 1:
-                    ChannelParser.startStream = line[1]
+                    ChannelParser.startStream = int(line[1])
                 else:
                     print 'argument?'
+            elif wordOne == 's':
+                if ChannelParser.prev_start > 0:
+                    ChannelParser.startStream = ChannelParser.prev_start
             elif wordOne == 'end' or wordOne == 'disable':
                 if len(line) > 1:
-                    ChannelParser.endStream = line[1]
+                    ChannelParser.endStream = int(line[1])
                 else:
                     print 'argument?'
+            elif wordOne == 'e' or wordOne == 'a':
+                if ChannelParser.prev_enabled > 0:
+                    ChannelParser.endStream = ChannelParser.prev_enabled
             elif wordOne == 'add':
                 ChannelParser.updateVars()
                 ChannelParser.writeChannelSection(str(ChannelParser.nextSection), rest)
@@ -344,7 +356,9 @@ class BasicIO(threading.Thread):
             elif wordOne == 'help':
                 print '\n'
                 print '  start/enable $section  |  yay'
+                print '  s                      |  start last online stream'
                 print '  end/disable $section  |  zzzz'
+                print '  a/e                      |  disable last enabled stream'
                 print '  add $channel/$channel $wait $quality $warningLevel  |  add channel with default or args'
                 print '  list/list all/list streams  |  list channels/list everything in config/list currently streaming'
                 print '  remove $section  |  removes section from config'
