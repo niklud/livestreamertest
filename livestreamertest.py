@@ -42,7 +42,7 @@ class Channel(threading.Thread):
                 reason = 'config.has_section == False'
                 break
             channel = config.get(str(threadID), 'channel')
-            warningLevel = int(config.get(str(threadID), 'warning level'))
+            warning_level = int(config.get(str(threadID), 'warning level'))
             wait = int(config.get(str(threadID), 'wait'))
             quality = config.get(str(threadID), 'quality')
             if ChannelParser.startStream == threadID:
@@ -53,7 +53,7 @@ class Channel(threading.Thread):
             if ChannelParser.endStream == threadID:
                 startStream = 0
                 ChannelParser.endStream = -1
-                if (warningLevel == 2):
+                if (warning_level == 2):
                     sleep += 21600
             if ChannelParser.sleep:  #do main() want all channels to sleep
                 sleep += 2.00
@@ -69,8 +69,8 @@ class Channel(threading.Thread):
                 elif startStream == 0 and not end_after_done == 0:
                     end_after_done = 0
                 continue
-            if not warningLevel > 1 and not startStream:
-                if not warningLevel:
+            if not warning_level > 1 and not startStream:
+                if not warning_level:
                     if not giveMeAChance:
                         if streaming:
                             giveMeAChance = 1
@@ -110,7 +110,9 @@ class Channel(threading.Thread):
                 if not threadID in ChannelParser.streaming:
                     ChannelParser.streaming.append(threadID)
                 warnedQuality = 0
-                if warningLevel > 1 or startStream:
+                if warning_level > 1 or startStream:
+                    if warning_level > 1:
+                        print '\a'
                     args = channel + ' ', quality
                     st = datetime.datetime.now().strftime('%H:%M')
                     ChannelParser.prev_enabled = threadID
@@ -121,7 +123,7 @@ class Channel(threading.Thread):
                     print '[' + st + '] ending stream: ' + str(threadID) + ', ' + channel
                     sleep += 10.00
                     continue
-                elif warningLevel:
+                elif warning_level:
                     if not warned:
                         st = datetime.datetime.now().strftime('%H:%M')
                         print '[' + st + '] stream started: ' + str(threadID) + ', ' + channel + '\a'
@@ -137,7 +139,7 @@ class Channel(threading.Thread):
                     giveMeAChance = 0  #have been given one
                     continue
             else:  #quality not in list, show alternatives
-                if warningLevel:
+                if warning_level:
                     if not warnedQuality:
                         warnedQuality = 1
                         print 'warning: ' + str(
