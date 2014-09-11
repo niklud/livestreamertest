@@ -368,7 +368,6 @@ class BasicIO(threading.Thread):
                     ChannelParser.printLevel = int(rest[0])
             elif wordOne == 'dl':
                 if rest:
-                    print 'dl'
                     ChannelParser.startStream = int(rest[0])
                     ChannelParser.dl_stream = 1
                 elif ChannelParser.dl_stream == 0:
