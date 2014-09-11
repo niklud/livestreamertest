@@ -30,6 +30,7 @@ class Channel(threading.Thread):
         startStream = 0
         end_after_done = 0
 
+
         time.sleep(5.00 * float(threadID) / float(ChannelParser.currentSize))
         config = ChannelParser.config
         reason = ''
@@ -115,22 +116,21 @@ class Channel(threading.Thread):
                         print '\a'
                     if ChannelParser.dl_stream == 1:
                         st = datetime.datetime.now().strftime('%H:%M')
-                        st2 = datetime.datetime.now().strftime('%H_%M')
-                        args = ' -o ', ' "' + config.get('config', 'path') + str(threadID) + '__' + st2 + '.mkv" ', channel + ' ', quality
-                        print args
+                        st2 = datetime.datetime.now().strftime('%H-%M')
+                        channel_name = channel.split('/')[-1]
+                        args = ' -o ', ' "' + config.get('config', 'path') + channel_name + '  ' + st2 + '.mkv" ', channel + ' ', quality
                         ChannelParser.prev_enabled = threadID
                         print '[' + st + '] starting dl: ' + str(threadID) + ', ' + channel
-                        Popen(['livestreamer.exe', args])
-                        if startStream:
-                            ChannelParser.endStream = threadID
+                        livestreamer_process = Popen(['livestreamer.exe', args])
+                        livestreamer_process.wait()
                         continue
                     else:
                         args = channel + ' ', quality
                         st = datetime.datetime.now().strftime('%H:%M')
                         ChannelParser.prev_enabled = threadID
                         print '[' + st + '] starting stream: ' + str(threadID) + ', ' + channel
-                        livestreamerProcess = Popen(['livestreamer.exe', args])
-                        livestreamerProcess.wait()
+                        livestreamer_process = Popen(['livestreamer.exe', args])
+                        livestreamer_process.wait()
                         st = datetime.datetime.now().strftime('%H:%M')
                         print '[' + st + '] ending stream: ' + str(threadID) + ', ' + channel
                         sleep += 10.00
