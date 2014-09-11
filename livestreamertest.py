@@ -120,6 +120,7 @@ class Channel(threading.Thread):
                         channel_name = channel.split('/')[-1]
                         args = ' -o ' + ' "' + config.get('config', 'path') + channel_name + '  ' + st2 + '.mkv" ' + channel + ' ' + quality
                         ChannelParser.prev_enabled = threadID
+                        print '[' + st + '] starting dl: ' + str(threadID) + ', ' + channel
                         args_to_start = "start cmd /k livestreamer.exe " + args
                         os.system(args_to_start)
                         ChannelParser.endStream = threadID
