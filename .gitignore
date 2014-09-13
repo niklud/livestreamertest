@@ -215,4 +215,4 @@ pip-log.txt
 .mr.developer.cfg
 
 #ignore
-config.ini
+#channels.ini
