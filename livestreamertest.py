@@ -24,7 +24,6 @@ class Channel(threading.Thread):
         threadID = self.threadID
         warned = 0
         warnedQuality = 0
-        giveMeAChance = 1  #if a stream is available let channel give an warning
         sleep = 0
         streaming = 0
         startStream = 0
@@ -49,7 +48,6 @@ class Channel(threading.Thread):
             quality = config.get(str(threadID), 'quality')
             if ChannelParser.startStream == threadID:
                 startStream = 1
-                giveMeAChance = 1
                 sleep = 0
                 ChannelParser.startStream = -1
             if ChannelParser.endStream == threadID:
@@ -72,13 +70,6 @@ class Channel(threading.Thread):
                 elif startStream == 0 and not end_after_done == 0:
                     end_after_done = 0
                 continue
-            if not warning_level > 1 and not startStream:
-                if not warning_level:
-                    if not giveMeAChance:
-                        if streaming:
-                            giveMeAChance = 1
-                            sleep += 100.00
-                        continue
             try:  # check for available stream
                 livestreamer = Livestreamer()
                 plugin = livestreamer.resolve_url(channel)
@@ -100,7 +91,6 @@ class Channel(threading.Thread):
                     st = datetime.datetime.now().strftime('%H:%M')
                     print '[' + st + '] stream ended: ' + str(threadID) + ', ' + channel
                     currently_dling = 0
-                    giveMeAChance = 1
                 streaming = 0
                 warned = 0
                 sleep += (wait * 10 + 6.00)
@@ -156,7 +146,6 @@ class Channel(threading.Thread):
                         warned = 1
                         st = datetime.datetime.now().strftime('%H:%M')
                         print '[' + st + '] ignored: ' + str(threadID) + ', ' + channel
-                    giveMeAChance = 0  #have been given one
                     continue
             else:  #quality not in list, show alternatives
                 if warning_level:
