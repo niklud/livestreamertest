@@ -29,6 +29,7 @@ class Channel(threading.Thread):
         streaming = 0
         startStream = 0
         end_after_done = 0
+        currently_dling = 0
 
 
         time.sleep(5.00 * float(threadID) / float(ChannelParser.currentSize))
@@ -54,6 +55,7 @@ class Channel(threading.Thread):
             if ChannelParser.endStream == threadID:
                 startStream = 0
                 ChannelParser.endStream = -1
+                currently_dling = 0
                 if (warning_level == 2):
                     sleep += 21600
             if ChannelParser.sleep:  #do main() want all channels to sleep
@@ -97,6 +99,7 @@ class Channel(threading.Thread):
                 if streaming:
                     st = datetime.datetime.now().strftime('%H:%M')
                     print '[' + st + '] stream ended: ' + str(threadID) + ', ' + channel
+                    currently_dling = 0
                     giveMeAChance = 1
                 streaming = 0
                 warned = 0
@@ -115,15 +118,19 @@ class Channel(threading.Thread):
                     if warning_level > 1:
                         print '\a'
                     if ChannelParser.dl_stream == 1:
+                        if currently_dling == 1:
+                            sleep += 4.00
+                            print 'dling'
+                            continue
                         st = datetime.datetime.now().strftime('%H:%M')
                         st2 = datetime.datetime.now().strftime('%d-%m-%Y %H-%M')
                         channel_name = channel.split('/')[-1]
                         args = ' -o ' + ' "' + config.get('config', 'path') + channel_name + '  ' + st2 + '.mkv" ' + channel + ' ' + quality
                         ChannelParser.prev_enabled = threadID
                         print '[' + st + '] starting dl: ' + str(threadID) + ', ' + channel
-                        args_to_start = 'start "' + channel_name + '" /MIN cmd /k livestreamer.exe ' + args
+                        args_to_start = 'start "' + channel_name + '" /MIN cmd /C livestreamer.exe ' + args
                         os.system(args_to_start)
-                        ChannelParser.endStream = threadID
+                        currently_dling = 1
                         continue
                     else:
                         args = channel + ' ', quality
