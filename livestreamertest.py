@@ -106,7 +106,8 @@ class Channel(threading.Thread):
                 warnedQuality = 0
                 if warning_level > 1 or startStream:
                     if warning_level > 1:
-                        print '\a'
+                        if not currently_dling:
+                            print '\a'
                     if ChannelParser.dl_stream == 1:
                         if currently_dling == 1:
                             sleep += 4.00
