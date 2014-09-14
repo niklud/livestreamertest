@@ -110,7 +110,6 @@ class Channel(threading.Thread):
                     if ChannelParser.dl_stream == 1:
                         if currently_dling == 1:
                             sleep += 4.00
-                            print 'dling'
                             continue
                         st = datetime.datetime.now().strftime('%H:%M')
                         st2 = datetime.datetime.now().strftime('%d-%m-%Y %H-%M')
