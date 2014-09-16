@@ -105,9 +105,6 @@ class Channel(threading.Thread):
                     ChannelParser.streaming.append(threadID)
                 warnedQuality = 0
                 if warning_level > 1 or startStream:
-                    if warning_level > 1:
-                        if not currently_dling:
-                            print '\a'
                     if ChannelParser.dl_stream == 1:
                         if currently_dling == 1:
                             sleep += 4.00
@@ -117,7 +114,7 @@ class Channel(threading.Thread):
                         channel_name = channel.split('/')[-1]
                         args = ' -o ' + ' "' + config.get('config', 'path') + channel_name + '  ' + st2 + '.mkv" ' + channel + ' ' + quality
                         ChannelParser.prev_enabled = threadID
-                        print '[' + st + '] starting dl: ' + str(threadID) + ', ' + channel
+                        print '[' + st + '] starting dl: ' + str(threadID) + ', ' + channel + '\a'
                         args_to_start = 'start "' + channel_name + '" /MIN cmd /C livestreamer.exe ' + args
                         os.system(args_to_start)
                         currently_dling = 1
@@ -126,7 +123,10 @@ class Channel(threading.Thread):
                         args = channel + ' ', quality
                         st = datetime.datetime.now().strftime('%H:%M')
                         ChannelParser.prev_enabled = threadID
-                        print '[' + st + '] starting stream: ' + str(threadID) + ', ' + channel
+                        to_print = '[' + st + '] starting stream: ' + str(threadID) + ', ' + channel
+                        if warning_level > 1:
+                            to_print += '\a'
+                        print to_print
                         livestreamer_process = Popen(['livestreamer.exe', args])
                         livestreamer_process.wait()
                         st = datetime.datetime.now().strftime('%H:%M')
