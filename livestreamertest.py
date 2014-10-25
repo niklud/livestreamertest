@@ -59,12 +59,12 @@ class Channel(threading.Thread):
                 print 'checked: ' + str(self.thread_id) + ', ' + self.channel
 
             #check if stream is available
-            try:
-                if not keys['stream']:
-                    self.no_stream_avail()
-                    continue
-            except:
-                print 'error loading:' + keys
+            if not 'stream' in keys:
+                print 'warning: loading ' + keys
+                continue
+            if not keys['stream']:
+                self.no_stream_avail()
+                continue
             else:
                 self.streaming = 1
             #start or ignore stream
@@ -122,6 +122,7 @@ class Channel(threading.Thread):
 
     def check_for_stream(self):
         url = 'https://api.twitch.tv/kraken/streams/' + self.channel.split('/')[-1]
+        stream_json = ''
         try:
             test = urllib2.urlopen(url).read()
             stream_json = json.loads(test)
