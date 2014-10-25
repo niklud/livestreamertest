@@ -7,6 +7,8 @@ from livestreamer import Livestreamer
 import random
 import ConfigParser
 import datetime
+import json
+import urllib2
 
 path = os.path.dirname(__file__)
 
@@ -40,6 +42,7 @@ class Channel(threading.Thread):
             if MainClass.die:
                 reason = 'die == true'
                 break
+
             #is section still in config
             if not self.config.has_section(str(self.thread_id)):
                 reason = 'config.has_section == False'
@@ -48,87 +51,83 @@ class Channel(threading.Thread):
             #sleep for set amount of time
             if self.do_sleep():
                 continue
+
             #check for available stream
             keys = self.check_for_stream()
 
             if ChannelParser.printLevel == 1:
                 print 'checked: ' + str(self.thread_id) + ', ' + self.channel
+
             #check if stream is available
-            if not keys:
-                self.no_stream_avail()
-                continue
+            try:
+                if not keys['stream']:
+                    self.no_stream_avail()
+                    continue
+            except:
+                print 'error loading:' + keys
             else:
                 self.streaming = 1
             #start or ignore stream
-            if self.quality in keys:
+            if not self.warned:
+                ChannelParser.prev_start = self.thread_id
+            if not self.thread_id in ChannelParser.streaming:
+                ChannelParser.streaming.append(self.thread_id)
+            self.warned_quality = 0
+            if self.warning_level > 1 or self.start_stream:
+                if ChannelParser.dl_stream == 1:
+                    if self.currently_dling == 1:
+                        self.sleep += 4.00
+                        continue
+                    st = datetime.datetime.now().strftime('%H:%M')
+                    st2 = datetime.datetime.now().strftime('%d-%m-%Y %H-%M')
+                    channel_name = self.channel.split('/')[-1]
+                    args = ' -o ' + ' "' + self.config.get('config', 'path') + channel_name + '  ' + st2 + \
+                           '.mkv" ' + self.channel + ' ' + self.quality
+                    ChannelParser.prev_enabled = self.thread_id
+                    print '[' + st + '] starting dl: ' + str(self.thread_id) + ', ' + self.channel + '\a'
+                    args_to_start = 'start "' + channel_name + '" /MIN cmd /C livestreamer.exe ' + args
+                    os.system(args_to_start)
+                    self.currently_dling = 1
+                    continue
+                else:
+                    args = self.channel + ' ', self.quality
+                    st = datetime.datetime.now().strftime('%H:%M')
+                    ChannelParser.prev_enabled = self.thread_id
+                    to_print = '[' + st + '] starting stream: ' + str(self.thread_id) + ', ' + self.channel
+                    if self.warning_level > 1:
+                        to_print += '\a'
+                    print to_print
+                    livestreamer_process = Popen(['livestreamer.exe', args])
+                    livestreamer_process.wait()
+                    st = datetime.datetime.now().strftime('%H:%M')
+                    print '[' + st + '] ending stream: ' + str(self.thread_id) + ', ' + self.channel
+                    self.sleep += 10.00
+                    continue
+            elif self.warning_level:
                 if not self.warned:
-                    ChannelParser.prev_start = self.thread_id
-                if not self.thread_id in ChannelParser.streaming:
-                    ChannelParser.streaming.append(self.thread_id)
-                self.warned_quality = 0
-                if self.warning_level > 1 or self.start_stream:
-                    if ChannelParser.dl_stream == 1:
-                        if self.currently_dling == 1:
-                            self.sleep += 4.00
-                            continue
-                        st = datetime.datetime.now().strftime('%H:%M')
-                        st2 = datetime.datetime.now().strftime('%d-%m-%Y %H-%M')
-                        channel_name = self.channel.split('/')[-1]
-                        args = ' -o ' + ' "' + self.config.get('config', 'path') + channel_name + '  ' + st2 + \
-                               '.mkv" ' + self.channel + ' ' + self.quality
-                        ChannelParser.prev_enabled = self.thread_id
-                        print '[' + st + '] starting dl: ' + str(self.thread_id) + ', ' + self.channel + '\a'
-                        args_to_start = 'start "' + channel_name + '" /MIN cmd /C livestreamer.exe ' + args
-                        os.system(args_to_start)
-                        self.currently_dling = 1
-                        continue
-                    else:
-                        args = self.channel + ' ', self.quality
-                        st = datetime.datetime.now().strftime('%H:%M')
-                        ChannelParser.prev_enabled = self.thread_id
-                        to_print = '[' + st + '] starting stream: ' + str(self.thread_id) + ', ' + self.channel
-                        if self.warning_level > 1:
-                            to_print += '\a'
-                        print to_print
-                        livestreamer_process = Popen(['livestreamer.exe', args])
-                        livestreamer_process.wait()
-                        st = datetime.datetime.now().strftime('%H:%M')
-                        print '[' + st + '] ending stream: ' + str(self.thread_id) + ', ' + self.channel
-                        self.sleep += 10.00
-                        continue
-                elif self.warning_level:
-                    if not self.warned:
-                        st = datetime.datetime.now().strftime('%H:%M')
-                        print '[' + st + '] stream started: ' + str(self.thread_id) + ', ' + self.channel + '\a'
-                        self.warned = 1
-                        self.sleep += 10
-                    else:
-                        self.sleep += self.wait * 10 + 6.00
+                    st = datetime.datetime.now().strftime('%H:%M')
+                    print '[' + st + '] stream started: ' + str(self.thread_id) + ', ' + self.channel + '\a'
+                    self.warned = 1
+                    self.sleep += 10
                 else:
-                    if not self.warned:
-                        self.warned = 1
-                        st = datetime.datetime.now().strftime('%H:%M')
-                        print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel
-                    continue
-            #quality not in list, show alternatives
+                    self.sleep += self.wait * 10 + 6.00
             else:
-                if self.warning_level:
-                    if not self.warned_quality:
-                        self.warned_quality = 1
-                        print 'warning: ' + str(
-                            self.thread_id) + ', ' + self.channel + ' does not support ' + self.quality + '\n' + \
-                            'supported formats: ' + ','.join(keys)
-                        self.sleep += 10
-                    continue
-                else:
-                    self.sleep += self.wait * 10 + 2.00
+                if not self.warned:
+                    self.warned = 1
+                    st = datetime.datetime.now().strftime('%H:%M')
+                    print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel
+                self.sleep += self.wait * 10 + 2.00
+                continue
         print 'thread ' + str(self.thread_id) + ' ended: from ' + reason
 
     def check_for_stream(self):
-        livestreamer = Livestreamer()
-        plugin = livestreamer.resolve_url(self.channel)
-        plugin = plugin.get_streams()
-        return plugin.keys()
+        url = 'https://api.twitch.tv/kraken/streams/' + self.channel.split('/')[-1]
+        try:
+            test = urllib2.urlopen(url).read()
+            stream_json = json.loads(test)
+        except:
+            print 'error loading json for: '+ self.channel
+        return stream_json
 
     def update_vars(self):
         self.channel = self.config.get(str(self.thread_id), 'channel')
