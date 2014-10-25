@@ -7,9 +7,12 @@ from livestreamer import Livestreamer
 import random
 import ConfigParser
 import datetime
+import unicodedata
 
 path = os.path.dirname(__file__)
 
+#splitchar = unichr(179);
+splitchar = '|';
 
 class Channel(threading.Thread):
     quality = 'high'
@@ -252,11 +255,11 @@ class ChannelParser:
     @staticmethod
     def listAll():
         config = ChannelParser.config
-        print 'Section | Enabled | Wait | Quality | Channel'
+        print 'Section ' + splitchar + ' Enabled ' + splitchar + ' Wait ' + splitchar + ' Quality ' + splitchar + ' Channel'
         for i in range(0, ChannelParser.currentSize + 1):
             if config.has_section(str(i)):
-                print '    ' + str(i) + '    |    ' + config.get(str(i), 'warning level') + '   |   ' + config.get(
-                    str(i), 'wait') + '   |   ' + config.get(str(i), 'quality') + '   |   ' + config.get(str(i),
+                print '    ' + str(i) + '    ' + splitchar + '    ' + config.get(str(i), 'warning level') + '   ' + splitchar + '   ' + config.get(
+                    str(i), 'wait') + '   ' + splitchar + '   ' + config.get(str(i), 'quality') + '   ' + splitchar + '   ' + config.get(str(i),
                                                                                                          'channel')
 
     @staticmethod
@@ -375,18 +378,19 @@ class BasicIO(threading.Thread):
                     print 'dl ended'
             elif wordOne == 'help':
                 print '\n'
-                print '  start/enable $section  |  yay'
-                print '  s                      |  start last online stream'
-                print '  end/disable $section  |  zzzz'
-                print '  a/e                      |  disable last enabled stream'
-                print '  add $channel/$channel $wait $quality $warningLevel  |  add channel with default or args'
-                print '  list/list all/list streams  |  list channels/list everything in config/list currently streaming'
-                print '  remove $section  |  removes section from config'
-                print '  change $section $var $value  |  change value | $var - wait, quality, warning, channel'
-                print '  die/q  |  kill everything nicely'
-                print '  sleep  |  nothing happens'
-                print '  print $level  |  level 1 for listing when channels are checked'
-                print '  dl     | dl $channel   | dl all or dl specific channel'
+                print 'start|enable [section]                     ' + splitchar + ' start stream'
+                print 's                                          ' + splitchar + ' start last online stream'
+                print 'end|disable [section]                      ' + splitchar + ' stop stream'
+                print 'a|e                                        ' + splitchar + ' disable last run stream'
+                print 'add [channel] [wait quality warn]          ' + splitchar + ' add channel'
+                print 'list|list [all|streams]                    ' + splitchar + ' channels||config|streaming'
+                print 'remove [section]                           ' + splitchar + ' removes section from config'
+                print 'change [section] [wait|warn|qual|ch] value ' + splitchar + ' change value'
+                print 'change [wait|qual|warn|ch] value           ' + splitchar + ' change value'
+                print 'die|q                                      ' + splitchar + ' kill everything nicely'
+                print 'sleep                                      ' + splitchar + ' nothing happens'
+                print 'print [level]                              ' + splitchar + ' debug info'
+                print 'dl [ch]                                    ' + splitchar + ' dl (channel)'
             else:
                 print 'try again'
 
