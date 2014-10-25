@@ -1,4 +1,5 @@
 from __future__ import division
+from _subprocess import CREATE_NEW_CONSOLE
 import threading
 import time
 import os
@@ -75,19 +76,20 @@ class Channel(threading.Thread):
             self.warned_quality = 0
             if self.warning_level > 1 or self.start_stream:
                 if ChannelParser.dl_stream == 1:
-                    if self.currently_dling == 1:
-                        self.sleep += 4.00
-                        continue
+                    # if self.currently_dling == 1:
+                    #     self.sleep += 4.00
+                    #     continue
                     st = datetime.datetime.now().strftime('%H:%M')
                     st2 = datetime.datetime.now().strftime('%d-%m-%Y %H-%M')
                     channel_name = self.channel.split('/')[-1]
                     args = ' -o ' + ' "' + self.config.get('config', 'path') + channel_name + '  ' + st2 + \
                            '.mkv" ' + self.channel + ' ' + self.quality
                     ChannelParser.prev_enabled = self.thread_id
-                    print '[' + st + '] starting dl: ' + str(self.thread_id) + ', ' + self.channel + '\a'
-                    args_to_start = 'start "' + channel_name + '" /MIN cmd /C livestreamer.exe ' + args
-                    os.system(args_to_start)
-                    self.currently_dling = 1
+                    print '[' + st + '] starting dl: ' + str(self.thread_id) + ', ' + channel_name + ', ' +\
+                          keys['stream']['game'] + '\a'
+                    args_to_start = 'livestreamer.exe ' + args
+                    livestreamer_process = Popen(args_to_start, creationflags=CREATE_NEW_CONSOLE)
+                    livestreamer_process.wait()
                     continue
                 else:
                     args = self.channel + ' ', self.quality
