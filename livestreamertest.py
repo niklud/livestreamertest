@@ -115,7 +115,7 @@ class Channel(threading.Thread):
                         st = datetime.datetime.now().strftime('%H:%M')
                         st2 = datetime.datetime.now().strftime('%d-%m-%Y %H-%M')
                         channel_name = channel.split('/')[-1]
-                        args = ' -o ' + ' "' + config.get('config', 'path') + channel_name + '  ' + st2 + '.mkv" ' + channel + ' ' + quality
+                        args = ' -o ' + ' "' + config.get('config', 'path') + channel_name + '  ' + st2 + '.ts" ' + channel + ' ' + quality
                         ChannelParser.prev_enabled = threadID
                         print '[' + st + '] starting dl: ' + str(threadID) + ', ' + channel + '\a'
                         args_to_start = 'start "' + channel_name + '" /MIN cmd /C livestreamer.exe ' + args
