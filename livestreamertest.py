@@ -11,10 +11,12 @@ import datetime
 path = os.path.dirname(__file__)
 
 
+
 class Channel(threading.Thread):
     quality = 'high'
     wait = 10
     warningLevel = 1
+    sleep = 0
 
     def __init__(self, threadID):
         threading.Thread.__init__(self)
@@ -24,7 +26,6 @@ class Channel(threading.Thread):
         threadID = self.threadID
         warned = 0
         warnedQuality = 0
-        sleep = 0
         streaming = 0
         startStream = 0
         end_after_done = 0
@@ -46,29 +47,7 @@ class Channel(threading.Thread):
             warning_level = int(config.get(str(threadID), 'warning level'))
             wait = int(config.get(str(threadID), 'wait'))
             quality = config.get(str(threadID), 'quality')
-            if ChannelParser.startStream == threadID:
-                startStream = 1
-                sleep = 0
-                ChannelParser.startStream = -1
-            if ChannelParser.endStream == threadID:
-                startStream = 0
-                ChannelParser.endStream = -1
-                currently_dling = 0
-                if (warning_level == 2):
-                    sleep += 21600
-            if ChannelParser.sleep:  #do main() want all channels to sleep
-                sleep += 2.00
-            if sleep >= 2.00:  #do needed sleep
-                time.sleep(2.25 + random.uniform(-0.25, 0.25))
-                sleep -= 2.00
-                if startStream == 1:
-                    if end_after_done >= 1000:
-                        startStream = 0
-                        end_after_done = 0
-                    else:
-                        end_after_done += 1
-                elif startStream == 0 and not end_after_done == 0:
-                    end_after_done = 0
+            if self.do_sleep():
                 continue
             try:  # check for available stream
                 livestreamer = Livestreamer()
@@ -93,7 +72,7 @@ class Channel(threading.Thread):
                     currently_dling = 0
                 streaming = 0
                 warned = 0
-                sleep += (wait * 10 + 6.00)
+                self.sleep += (wait * 10 + 6.00)
                 continue
             else:
                 streaming = 1
@@ -107,7 +86,7 @@ class Channel(threading.Thread):
                 if warning_level > 1 or startStream:
                     if ChannelParser.dl_stream == 1:
                         if currently_dling == 1:
-                            sleep += 4.00
+                            self.sleep += 4.00
                             continue
                         st = datetime.datetime.now().strftime('%H:%M')
                         st2 = datetime.datetime.now().strftime('%d-%m-%Y %H-%M')
@@ -131,16 +110,16 @@ class Channel(threading.Thread):
                         livestreamer_process.wait()
                         st = datetime.datetime.now().strftime('%H:%M')
                         print '[' + st + '] ending stream: ' + str(threadID) + ', ' + channel
-                        sleep += 10.00
+                        self.sleep += 10.00
                         continue
                 elif warning_level:
                     if not warned:
                         st = datetime.datetime.now().strftime('%H:%M')
                         print '[' + st + '] stream started: ' + str(threadID) + ', ' + channel + '\a'
                         warned = 1
-                        sleep += 10
+                        self.sleep += 10
                     else:
-                        sleep += wait * 10 + 6.00
+                        self.sleep += wait * 10 + 6.00
                 else:
                     if not warned:
                         warned = 1
@@ -154,12 +133,30 @@ class Channel(threading.Thread):
                         print 'warning: ' + str(
                             threadID) + ', ' + channel + ' does not support ' + quality + '\n' + 'supported formats: ' + ','.join(
                             keys)
-                        sleep += 10
+                        self.sleep += 10
                     continue
                 else:
-                    sleep += wait * 10 + 2.00
+                    self.sleep += wait * 10 + 2.00
         print 'thread ' + str(threadID) + ' ended: from ' + reason
 
+    def do_sleep(self):
+        if ChannelParser.startStream == self.threadID:
+            startStream = 1
+            self.sleep = 0
+            ChannelParser.startStream = -1
+        if ChannelParser.endStream == self.threadID:
+            startStream = 0
+            ChannelParser.endStream = -1
+            currently_dling = 0
+            if (self.warning_level == 2):
+                self.sleep += 21600
+        if ChannelParser.sleep:  #do main() want all channels to sleep
+            self.sleep += 2.00
+        if self.sleep >= 2.00:  #do needed sleep
+            time.sleep(2.25 + random.uniform(-0.25, 0.25))
+            self.sleep -= 2.00
+            return True
+        return False
 
 class ChannelParser:
     newThreads = []
