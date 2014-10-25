@@ -49,17 +49,8 @@ class Channel(threading.Thread):
             if self.do_sleep():
                 continue
             #check for available stream
-            try:
-                livestreamer = Livestreamer()
-                plugin = livestreamer.resolve_url(self.channel)
-                plugin = plugin.get_streams()
-                keys = plugin.keys()
-            #another channel was using plugin causing error, to lazy to make a real lock function
-            except:
-                time.sleep(random.uniform(0.0, 2.0))
-                if self.ChannelParser.printLevel == 1:
-                    print 'plugin error: ' + str(self.thread_id) + ', ' + self.channel
-                continue
+            keys = self.check_for_stream()
+
             if ChannelParser.printLevel == 1:
                 print 'checked: ' + str(self.thread_id) + ', ' + self.channel
             #check if stream is available
@@ -132,6 +123,12 @@ class Channel(threading.Thread):
                 else:
                     self.sleep += self.wait * 10 + 2.00
         print 'thread ' + str(self.thread_id) + ' ended: from ' + reason
+
+    def check_for_stream(self):
+        livestreamer = Livestreamer()
+        plugin = livestreamer.resolve_url(self.channel)
+        plugin = plugin.get_streams()
+        return plugin.keys()
 
     def update_vars(self):
         self.channel = self.config.get(str(self.thread_id), 'channel')
