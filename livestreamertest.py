@@ -2,7 +2,11 @@ from __future__ import division
 import threading
 import time
 import os
-from subprocess import Popen
+from subprocess import Popen, CREATE_NEW_CONSOLE, STARTUPINFO, STARTF_USESHOWWINDOW, SW_HIDE
+import ctypes
+#from subprocess import *
+#import win32con
+#import win32gui
 from livestreamer import Livestreamer
 import random
 import ConfigParser
@@ -119,13 +123,27 @@ class Channel(threading.Thread):
                             livestreamer_path = config.get('config', 'livestreamer')
                         else:
                             livestreamer_path = 'livestreamer.exe'
-                        args = ' -o ' + ' "' + config.get('config', 'path') + channel_name + '  ' + st2 + '.ts" ' + channel + ' ' + quality
+                        args = livestreamer_path + ' -o ' + ' "' + config.get('config', 'path') + channel_name + '  ' + st2 + '.ts" ' + channel + ' ' + quality
                         ChannelParser.prev_enabled = threadID
                         print '[' + st + '] starting dl: ' + str(threadID) + ', ' + channel + '\a'
-                        args_to_start = 'start "' + channel_name + '" /MIN cmd /C ' + livestreamer_path + ' ' + args
-                        os.system(args_to_start)
-                        currently_dling = 1
-                        continue
+                        if os.name == 'nt':
+                            args_to_start = 'start "' + channel_name + '" /MIN cmd /C ' + livestreamer_path + ' ' + args
+#                           os.system(args_to_start)
+                            print "args = "
+                            print (args)
+                            print "livestreamer path = " + livestreamer_path
+                            startupinfo = STARTUPINFO()
+                            startupinfo.dwFlags |= STARTF_USESHOWWINDOW
+                            startupinfo
+                        #    startupinfo.wShowWindow = win32con.SW_SHOWMINIMIZED
+                           # startupinfo.wShowWindow = SW_HIDE
+                            ctypes.windll.kernel32.SetConsoleTitleA(channel_name)
+                            # Start minimized
+                            # See http://msdn.microsoft.com/en-us/library/windows/desktop/ms633548(v=vs.85).aspx for codes
+                            startupinfo.wShowWindow = 6
+                            livestreamer_process = Popen(args, creationflags=CREATE_NEW_CONSOLE, startupinfo=startupinfo)
+                            currently_dling = 1
+                            continue
                     else:
                         args = channel + ' ', quality
                         st = datetime.datetime.now().strftime('%H:%M')
