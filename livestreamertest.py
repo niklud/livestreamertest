@@ -93,11 +93,11 @@ class Channel(threading.Thread):
                     st = datetime.datetime.now().strftime('%H:%M')
                     st2 = datetime.datetime.now().strftime('%d-%m-%Y %H-%M')
                     if self.config.has_option('config', 'game_name_rule'):
-                        safe_game_name = re.sub(self.config.get('config', 'game_name_rule'),'' , self.game)
+                        safe_game_name = re.sub(self.config.get('config', 'game_name_rule'), '', self.game)
                     else:
                         safe_game_name = re.sub("[^A-Za-z0-9_.\s-]*", '', self.game)
-                    args = ' -o ' + ' "' + self.config.get('config', 'path') + self.channel_name + ' - ' + safe_game_name +\
-                           ' - ' + st2 + '.ts" ' + self.channel + ' ' + self.quality
+                    args = ' -o ' + ' "' + self.config.get('config', 'path') + self.channel_name + ' - ' + \
+                           safe_game_name + ' - ' + st2 + '.ts" ' + self.channel + ' ' + self.quality
                     ChannelParser.prev_enabled = self.thread_id
                     start_time = time.time()
                     if start_time - self.last_dl_ended > 10:
@@ -108,7 +108,8 @@ class Channel(threading.Thread):
                     startupinfo.dwFlags |= STARTF_USESHOWWINDOW
                     startupinfo.wShowWindow = 6
                     ChannelParser.dling.append(self)
-                    livestreamer_process = Popen(args_to_start, creationflags=CREATE_NEW_CONSOLE, startupinfo=startupinfo)
+                    livestreamer_process = Popen(args_to_start, creationflags=CREATE_NEW_CONSOLE,
+                                                 startupinfo=startupinfo)
                     livestreamer_process.wait()
                     ChannelParser.dling.remove(self)
                     self.last_dl_ended = time.time()
@@ -182,15 +183,15 @@ class Channel(threading.Thread):
         self.quality = self.config.get(str(self.thread_id), 'quality')
 
     def do_sleep(self):
-        if ChannelParser.startStream == self.thread_id:
+        if ChannelParser.start_stream == self.thread_id:
             self.start_stream = 1
             self.sleep = 0
-            ChannelParser.startStream = -1
-        if ChannelParser.endStream == self.thread_id:
+            ChannelParser.start_stream = -1
+        if ChannelParser.end_stream == self.thread_id:
             self.start_stream = 0
-            ChannelParser.endStream = -1
+            ChannelParser.end_stream = -1
             self.currently_dling = 0
-            if (self.warning_level == 2):
+            if self.warning_level == 2:
                 self.sleep += 21600
         #do main() want all channels to sleep
         if ChannelParser.sleep:
@@ -222,8 +223,8 @@ class ChannelParser:
     sleep = 0
     config = ConfigParser.RawConfigParser()
     nextSection = 0
-    startStream = -1
-    endStream = -1
+    start_stream = -1
+    end_stream = -1
     streaming = []
     dling = []
     printLevel = 0
@@ -381,20 +382,20 @@ class BasicIO(threading.Thread):
             rest = line[1:]
             if wordOne == 'start' or wordOne == 'enable':
                 if len(line) > 1:
-                    ChannelParser.startStream = int(line[1])
+                    ChannelParser.start_stream = int(line[1])
                 else:
                     print 'argument?'
             elif wordOne == 's':
                 if ChannelParser.prev_start > 0:
-                    ChannelParser.startStream = ChannelParser.prev_start
+                    ChannelParser.start_stream = ChannelParser.prev_start
             elif wordOne == 'end' or wordOne == 'disable':
                 if len(line) > 1:
-                    ChannelParser.endStream = int(line[1])
+                    ChannelParser.end_stream = int(line[1])
                 else:
                     print 'argument?'
             elif wordOne == 'e' or wordOne == 'a':
                 if ChannelParser.prev_enabled > 0:
-                    ChannelParser.endStream = ChannelParser.prev_enabled
+                    ChannelParser.end_stream = ChannelParser.prev_enabled
             elif wordOne == 'add':
                 ChannelParser.updateVars()
                 ChannelParser.writeChannelSection(str(ChannelParser.nextSection), rest)
@@ -427,7 +428,7 @@ class BasicIO(threading.Thread):
                     ChannelParser.printLevel = int(rest[0])
             elif wordOne == 'dl':
                 if rest:
-                    ChannelParser.startStream = int(rest[0])
+                    ChannelParser.start_stream = int(rest[0])
                     ChannelParser.dl_stream = 1
                 elif ChannelParser.dl_stream == 0:
                     ChannelParser.dl_stream = 1
