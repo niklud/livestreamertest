@@ -120,20 +120,25 @@ class Channel(threading.Thread):
                     args = self.channel + ' ', self.quality
                     st = datetime.datetime.now().strftime('%H:%M')
                     ChannelParser.prev_enabled = self.thread_id
-                    to_print = '[' + st + '] starting stream: ' + str(self.thread_id) + ', ' + self.channel
+                    to_print = '[' + st + '] starting stream: ' + str(self.thread_id) + ', ' + self.channel_name + \
+                               ', ' + self.game + '\a'
                     if self.warning_level > 1:
                         to_print += '\a'
                     print to_print
                     livestreamer_process = Popen(['livestreamer.exe', args])
                     livestreamer_process.wait()
                     st = datetime.datetime.now().strftime('%H:%M')
-                    print '[' + st + '] ending stream: ' + str(self.thread_id) + ', ' + self.channel
+                    print '[' + st + '] ending stream: ' + str(self.thread_id) + ', ' + self.channel_name
                     self.sleep += 10.00
                     continue
             elif self.warning_level:
                 if not self.warned:
                     st = datetime.datetime.now().strftime('%H:%M')
-                    print '[' + st + '] stream started: ' + str(self.thread_id) + ', ' + self.channel + '\a'
+                    if self.game:
+                        print '[' + st + '] stream started: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' +\
+                              self.game + '\a'
+                    else:
+                        print '[' + st + '] stream started: ' + str(self.thread_id) + ', ' + self.channel + '\a'
                     self.warned = 1
                     self.sleep += 10
                 else:
@@ -142,7 +147,12 @@ class Channel(threading.Thread):
                 if not self.warned:
                     self.warned = 1
                     st = datetime.datetime.now().strftime('%H:%M')
-                    print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel
+                    if self.game:
+                        print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' +\
+                              self.game + '\a'
+                    else:
+                        print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel
+
                 self.sleep += self.wait * 10 + 2.00
                 continue
         print 'thread ' + str(self.thread_id) + ' ended, Reason: ' + reason
@@ -322,13 +332,21 @@ class ChannelParser:
     def listStreams():
         print 'currently streaming:'
         for i in ChannelParser.streaming:
-            print 'Section ' + str(i.thread_id) + ', ' + i.channel_name + ', Playing: ' + i.game
+            if i.game:
+                print 'Section ' + str(i.thread_id) + ', ' + i.channel_name + ', Playing: ' + i.game
+            else:
+                print 'Section ' + str(i.thread_id) + ', ' + i.channel_name
+
 
     @staticmethod
     def list_dl():
         print 'currently dling:'
         for i in ChannelParser.dling:
-            print 'Section ' + str(i.thread_id) + ', ' + i.channel_name + ', Playing: ' + i.game
+            if i.game:
+                print 'Section ' + str(i.thread_id) + ', ' + i.channel_name + ', Playing: ' + i.game
+            else:
+                print 'Section ' + str(i.thread_id) + ', ' + i.channel_name
+
 
     @staticmethod
     def toString():
