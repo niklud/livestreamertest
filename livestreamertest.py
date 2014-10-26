@@ -149,7 +149,8 @@ class Channel(threading.Thread):
                     st = datetime.datetime.now().strftime('%H:%M')
                     if self.game:
                         print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' +\
-                              self.game + '\a'
+                              self.game
+                              self.game
                     else:
                         print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel_name
 
