@@ -8,6 +8,7 @@ quality = best
 warning level = 1
 
 [1]
+name = Sunbla
 channel = http://www.twitch.tv/sunbla
 wait = 8
 quality = best

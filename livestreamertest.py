@@ -181,10 +181,13 @@ class Channel(threading.Thread):
 
     def update_vars(self):
         self.channel = self.config.get(str(self.thread_id), 'channel')
-        self.channel_name = self.channel.split('/')[-1]
         self.warning_level = int(self.config.get(str(self.thread_id), 'warning level'))
         self.wait = int(self.config.get(str(self.thread_id), 'wait'))
         self.quality = self.config.get(str(self.thread_id), 'quality')
+        if self.config.has_option(str(self.thread_id), 'name'):
+            self.channel_name = self.config.get(str(self.thread_id), 'name')
+        else:
+            self.channel_name = self.channel.split('/')[-1]
 
     def do_sleep(self):
         if ChannelParser.start_stream == self.thread_id:
