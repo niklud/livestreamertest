@@ -1,13 +1,8 @@
 from __future__ import division
-from _subprocess import CREATE_NEW_CONSOLE
 import threading
 import time
 import os
-from subprocess import Popen, CREATE_NEW_CONSOLE, STARTUPINFO, STARTF_USESHOWWINDOW, SW_HIDE
-import ctypes
-#from subprocess import *
-#import win32con
-#import win32gui
+from subprocess import Popen, CREATE_NEW_CONSOLE, STARTUPINFO, STARTF_USESHOWWINDOW
 import random
 import ConfigParser
 import datetime
@@ -17,7 +12,7 @@ import re
 path = os.path.dirname(__file__)
 
 #splitchar = unichr(179);
-splitchar = '|';
+splitchar = '|'
 
 
 class Channel(threading.Thread):
