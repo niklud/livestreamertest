@@ -1,5 +1,6 @@
 [config]
 path = D:\Twitch\
+game_name_rule = [^A-Za-z0-9_.\s-]*
 
 [defaults]
 wait = 4
