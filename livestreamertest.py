@@ -77,6 +77,7 @@ class Channel(threading.Thread):
             else:
                 self.streaming = 1
                 self.game = keys['stream']['game']
+
             #start or ignore stream
             if not self.warned:
                 ChannelParser.prev_start = self.thread_id
@@ -144,7 +145,7 @@ class Channel(threading.Thread):
                     print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel
                 self.sleep += self.wait * 10 + 2.00
                 continue
-        print 'thread ' + str(self.thread_id) + ' ended: from ' + reason
+        print 'thread ' + str(self.thread_id) + ' ended, Reason: ' + reason
 
     def check_for_stream(self):
         url = 'https://api.twitch.tv/kraken/streams/' + self.channel.split('/')[-1]
@@ -169,9 +170,8 @@ class Channel(threading.Thread):
                 continue
         if not connection:
             print 'Error: failed to open connection to ' + self.channel
-        if not parsed_json:
+        if connection and not parsed_json:
             print 'Error: failed to parse twitch response to json ' + self.channel
-
         return stream_json
 
     def update_vars(self):
