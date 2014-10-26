@@ -105,14 +105,10 @@ class Channel(threading.Thread):
                     startupinfo.wShowWindow = 6
                     ChannelParser.dling.append(self)
                     start_time = time.time()
-                    print "DEBUG: starttime: "
-                    print start_time
                     livestreamer_process = Popen(args_to_start, creationflags=CREATE_NEW_CONSOLE, startupinfo=startupinfo)
                     livestreamer_process.wait()
                     ChannelParser.dling.remove(self)
                     diff_time = time.time() - start_time
-                    print "DEBUG: endtime: "
-                    print diff_time
                     if diff_time < 5:
                         print "Stream ended too quickly, holding for 5 minutes: " + self.channel_name
                         self.sleep += 180
