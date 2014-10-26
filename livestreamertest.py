@@ -138,7 +138,7 @@ class Channel(threading.Thread):
                         print '[' + st + '] stream started: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' +\
                               self.game + '\a'
                     else:
-                        print '[' + st + '] stream started: ' + str(self.thread_id) + ', ' + self.channel + '\a'
+                        print '[' + st + '] stream started: ' + str(self.thread_id) + ', ' + self.channel_name + '\a'
                     self.warned = 1
                     self.sleep += 10
                 else:
@@ -151,7 +151,7 @@ class Channel(threading.Thread):
                         print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' +\
                               self.game + '\a'
                     else:
-                        print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel
+                        print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel_name
 
                 self.sleep += self.wait * 10 + 2.00
                 continue
