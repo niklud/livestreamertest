@@ -150,7 +150,6 @@ class Channel(threading.Thread):
                     if self.game:
                         print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' +\
                               self.game
-                              self.game
                     else:
                         print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel_name
 
