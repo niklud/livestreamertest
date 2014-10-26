@@ -149,11 +149,29 @@ class Channel(threading.Thread):
     def check_for_stream(self):
         url = 'https://api.twitch.tv/kraken/streams/' + self.channel.split('/')[-1]
         stream_json = ''
-        try:
-            test = urllib2.urlopen(url).read()
-            stream_json = json.loads(test)
-        except:
-            print 'error loading json for: '+ self.channel
+        connection = False
+        parsed_json = False
+        i = 0
+        while not connection or i > 2:
+            try:
+                response = urllib2.urlopen(url).read()
+                connection = True
+            except:
+                i += 1
+                time.sleep(2)
+                continue
+            try:
+                stream_json = json.loads(response)
+                parsed_json = True
+            except:
+                i += 1
+                time.sleep(2)
+                continue
+        if not connection:
+            print 'Error: failed to open connection to ' + self.channel
+        if not parsed_json:
+            print 'Error: failed to parse twitch response to json ' + self.channel
+
         return stream_json
 
     def update_vars(self):
