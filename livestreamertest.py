@@ -34,6 +34,7 @@ class Channel(threading.Thread):
     channel = ""
     channel_name = ""
     game = ""
+    last_dl_ended = 0
 
     def __init__(self, threadID):
         threading.Thread.__init__(self)
@@ -97,20 +98,21 @@ class Channel(threading.Thread):
                     args = ' -o ' + ' "' + self.config.get('config', 'path') + self.channel_name + ' - ' + safe_game_name +\
                            ' - ' + st2 + '.ts" ' + self.channel + ' ' + self.quality
                     ChannelParser.prev_enabled = self.thread_id
-                    print '[' + st + '] starting dl: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' +\
-                          self.game + '\a'
+                    start_time = time.time()
+                    if start_time - self.last_dl_ended > 10:
+                        print '[' + st + '] starting dl: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' +\
+                              self.game + '\a'
                     args_to_start = livestreamer_path + ' ' + args
                     startupinfo = STARTUPINFO()
                     startupinfo.dwFlags |= STARTF_USESHOWWINDOW
                     startupinfo.wShowWindow = 6
                     ChannelParser.dling.append(self)
-                    start_time = time.time()
                     livestreamer_process = Popen(args_to_start, creationflags=CREATE_NEW_CONSOLE, startupinfo=startupinfo)
                     livestreamer_process.wait()
                     ChannelParser.dling.remove(self)
-                    diff_time = time.time() - start_time
+                    self.last_dl_ended = time.time()
+                    diff_time = self.last_dl_ended - start_time
                     if diff_time < 5:
-                        print "Stream ended too quickly, holding for 5 minutes: " + self.channel_name
                         self.sleep += 180
                     continue
                 else:
