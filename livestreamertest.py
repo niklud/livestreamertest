@@ -10,6 +10,7 @@ import ConfigParser
 import datetime
 import json
 import urllib2
+import re
 
 path = os.path.dirname(__file__)
 
@@ -82,11 +83,16 @@ class Channel(threading.Thread):
                     st = datetime.datetime.now().strftime('%H:%M')
                     st2 = datetime.datetime.now().strftime('%d-%m-%Y %H-%M')
                     channel_name = self.channel.split('/')[-1]
-                    args = ' -o ' + ' "' + self.config.get('config', 'path') + channel_name + '  ' + st2 + \
-                           '.mkv" ' + self.channel + ' ' + self.quality
+                    game = keys['stream']['game']
+                    if self.config.has_option('config', 'game_name_rule'):
+                        safe_game_name = re.sub(self.config.get('config', 'game_name_rule'),'' , game)
+                    else:
+                        safe_game_name = re.sub("[^A-Za-z0-9_.\s-]*", '', game)
+                    args = ' -o ' + ' "' + self.config.get('config', 'path') + channel_name + ' - ' + safe_game_name +\
+                           ' - ' + st2 + '.mkv" ' + self.channel + ' ' + self.quality
                     ChannelParser.prev_enabled = self.thread_id
                     print '[' + st + '] starting dl: ' + str(self.thread_id) + ', ' + channel_name + ', ' +\
-                          keys['stream']['game'] + '\a'
+                          game + '\a'
                     args_to_start = 'livestreamer.exe ' + args
                     livestreamer_process = Popen(args_to_start, creationflags=CREATE_NEW_CONSOLE)
                     livestreamer_process.wait()
