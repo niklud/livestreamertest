@@ -64,13 +64,17 @@ class Channel(threading.Thread):
             #check for available stream
             keys = self.check_for_stream()
 
+
             if ChannelParser.printLevel == 1:
                 print 'checked: ' + str(self.thread_id) + ', ' + self.channel
 
             #check if stream is available
             if not 'stream' in keys:
-                print 'warning: loading ' + keys
-                continue
+                if keys == '':
+                    continue
+                else:
+                    print 'warning: loading ' + keys
+                    continue
             if not keys['stream']:
                 self.no_stream_avail()
                 continue
