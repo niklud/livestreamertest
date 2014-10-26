@@ -32,6 +32,8 @@ class Channel(threading.Thread):
     end_after_done = 0
     currently_dling = 0
     channel = ""
+    channel_name = ""
+    game = ""
 
     def __init__(self, threadID):
         threading.Thread.__init__(self)
@@ -73,11 +75,12 @@ class Channel(threading.Thread):
                 continue
             else:
                 self.streaming = 1
+                self.game = keys['stream']['game']
             #start or ignore stream
             if not self.warned:
                 ChannelParser.prev_start = self.thread_id
-            if not self.thread_id in ChannelParser.streaming:
-                ChannelParser.streaming.append(self.thread_id)
+            if not self in ChannelParser.streaming:
+                ChannelParser.streaming.append(self)
             self.warned_quality = 0
             if self.warning_level > 1 or self.start_stream:
                 if ChannelParser.dl_stream == 1:
@@ -87,23 +90,24 @@ class Channel(threading.Thread):
                         livestreamer_path = 'livestreamer.exe'
                     st = datetime.datetime.now().strftime('%H:%M')
                     st2 = datetime.datetime.now().strftime('%d-%m-%Y %H-%M')
-                    channel_name = self.channel.split('/')[-1]
-                    game = keys['stream']['game']
                     if self.config.has_option('config', 'game_name_rule'):
-                        safe_game_name = re.sub(self.config.get('config', 'game_name_rule'),'' , game)
+                        safe_game_name = re.sub(self.config.get('config', 'game_name_rule'),'' , self.game)
                     else:
-                        safe_game_name = re.sub("[^A-Za-z0-9_.\s-]*", '', game)
-                    args = ' -o ' + ' "' + self.config.get('config', 'path') + channel_name + ' - ' + safe_game_name +\
+                        safe_game_name = re.sub("[^A-Za-z0-9_.\s-]*", '', self.game)
+                    args = ' -o ' + ' "' + self.config.get('config', 'path') + self.channel_name + ' - ' + safe_game_name +\
                            ' - ' + st2 + '.ts" ' + self.channel + ' ' + self.quality
                     ChannelParser.prev_enabled = self.thread_id
-                    print '[' + st + '] starting dl: ' + str(self.thread_id) + ', ' + channel_name + ', ' +\
-                          game + '\a'
+                    print '[' + st + '] starting dl: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' +\
+                          self.game + '\a'
                     args_to_start = livestreamer_path + ' ' + args
                     startupinfo = STARTUPINFO()
                     startupinfo.dwFlags |= STARTF_USESHOWWINDOW
                     startupinfo.wShowWindow = 6
+                    ChannelParser.dling.append(self)
                     livestreamer_process = Popen(args_to_start, creationflags=CREATE_NEW_CONSOLE, startupinfo=startupinfo)
                     livestreamer_process.wait()
+                    ChannelParser.dling.remove(self)
+                    self.sleep += self.wait*10 + 2
                     continue
                 else:
                     args = self.channel + ' ', self.quality
@@ -148,6 +152,7 @@ class Channel(threading.Thread):
 
     def update_vars(self):
         self.channel = self.config.get(str(self.thread_id), 'channel')
+        self.channel_name = self.channel.split('/')[-1]
         self.warning_level = int(self.config.get(str(self.thread_id), 'warning level'))
         self.wait = int(self.config.get(str(self.thread_id), 'wait'))
         self.quality = self.config.get(str(self.thread_id), 'quality')
@@ -174,10 +179,10 @@ class Channel(threading.Thread):
         return False
 
     def no_stream_avail(self):
-        if self.thread_id in ChannelParser.streaming:
+        if self in ChannelParser.streaming:
             if self.warned_quality and not self.streaming:
                 self.warned_quality = 0
-            ChannelParser.streaming.remove(self.thread_id)
+            ChannelParser.streaming.remove(self)
         if self.streaming:
             st = datetime.datetime.now().strftime('%H:%M')
             print '[' + st + '] stream ended: ' + str(self.thread_id) + ', ' + self.channel
@@ -196,6 +201,7 @@ class ChannelParser:
     startStream = -1
     endStream = -1
     streaming = []
+    dling = []
     printLevel = 0
     prev_start = -1
     prev_enabled = -1
@@ -287,11 +293,15 @@ class ChannelParser:
 
     @staticmethod
     def listStreams():
-        config = ChannelParser.config
         print 'currently streaming:'
         for i in ChannelParser.streaming:
-            if config.has_section(str(i)):
-                print 'Section ' + str(i) + ', ' + config.get(str(i), 'channel')
+            print 'Section ' + str(i.thread_id) + ', ' + i.channel_name + ', Playing: ' + i.game
+
+    @staticmethod
+    def list_dl():
+        print 'currently dling:'
+        for i in ChannelParser.dling:
+            print 'Section ' + str(i.thread_id) + ', ' + i.channel_name + ', Playing: ' + i.game
 
     @staticmethod
     def toString():
@@ -368,6 +378,8 @@ class BasicIO(threading.Thread):
                 if rest:
                     if rest[0] == 'streams':
                         ChannelParser.listStreams()
+                    elif rest[0] == 'dl':
+                        ChannelParser.list_dl()
                     else:
                         ChannelParser.listAll()
                 else:
