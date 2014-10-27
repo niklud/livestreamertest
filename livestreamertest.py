@@ -91,17 +91,25 @@ class Channel(threading.Thread):
                         livestreamer_path = 'livestreamer.exe'
                     st = datetime.datetime.now().strftime('%H:%M')
                     st2 = datetime.datetime.now().strftime('%d-%m-%Y %H-%M')
-                    if self.config.has_option('config', 'game_name_rule'):
-                        safe_game_name = re.sub(self.config.get('config', 'game_name_rule'), '', self.game)
+                    if self.game:
+                        if self.config.has_option('config', 'game_name_rule'):
+                            safe_game_name = re.sub(self.config.get('config', 'game_name_rule'), '', self.game)
+                        else:
+                            safe_game_name = re.sub("[^A-Za-z0-9_.\s-]*", '', self.game)
+                        args = ' -o ' + ' "' + self.config.get('config', 'path') + self.channel_name + ' - ' + \
+                               safe_game_name + ' - ' + st2 + '.ts" ' + self.channel + ' ' + self.quality
                     else:
-                        safe_game_name = re.sub("[^A-Za-z0-9_.\s-]*", '', self.game)
-                    args = ' -o ' + ' "' + self.config.get('config', 'path') + self.channel_name + ' - ' + \
-                           safe_game_name + ' - ' + st2 + '.ts" ' + self.channel + ' ' + self.quality
+                        args = ' -o ' + ' "' + self.config.get('config', 'path') + self.channel_name + ' - ' +\
+                               st2 + '.ts" ' + self.channel + ' ' + self.quality
                     ChannelParser.prev_enabled = self.thread_id
                     start_time = time.time()
                     if start_time - self.last_dl_ended > 10:
-                        print '[' + st + '] starting dl: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' +\
-                              self.game + '\a'
+                        if self.game:
+                            print '[' + st + '] starting dl: ' + str(self.thread_id) + ', ' + self.channel_name + ', '\
+                                  + self.game + '\a'
+                        else:
+                            print '[' + st + '] starting dl: ' + str(self.thread_id) + ', ' + self.channel_name + \
+                                  '\a'
                     args_to_start = livestreamer_path + ' ' + args
                     startupinfo = STARTUPINFO()
                     startupinfo.dwFlags |= STARTF_USESHOWWINDOW
