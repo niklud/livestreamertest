@@ -476,7 +476,7 @@ class BasicIO(threading.Thread):
                 print ' end|disable [section]                      ' + splitchar + ' stop stream'
                 print ' a|e                                        ' + splitchar + ' disable last run stream'
                 print ' add [channel] [wait quality warn]          ' + splitchar + ' add channel'
-                print ' list|list [all|streams]                    ' + splitchar + ' channels||config|streaming'
+                print ' list|list [all|streams|dl]                 ' + splitchar + ' channels||config|streaming|dling'
                 print ' remove [section]                           ' + splitchar + ' removes section from config'
                 print ' change [section] [wait|warn|qual|ch] value ' + splitchar + ' change value'
                 print ' change [wait|qual|warn|ch] value           ' + splitchar + ' change value'
