@@ -78,92 +78,97 @@ class Channel(threading.Thread):
                 self.game = keys['stream']['game']
 
             #start or ignore stream
-            if not self.warned:
-                ChannelParser.prev_start = self.thread_id
-            if not self in ChannelParser.streaming:
-                ChannelParser.streaming.append(self)
-            self.warned_quality = 0
-            if self.warning_level > 1 or self.start_stream:
-                if ChannelParser.dl_stream == 1:
-                    if self.config.has_option('config', 'livestreamer'):
-                        livestreamer_path = self.config.get('config', 'livestreamer')
-                    else:
-                        livestreamer_path = 'livestreamer.exe'
-                    st = datetime.datetime.now().strftime('%H:%M')
-                    st2 = datetime.datetime.now().strftime('%d-%m-%Y %H-%M')
-                    if self.game:
-                        if self.config.has_option('config', 'game_name_rule'):
-                            safe_game_name = re.sub(self.config.get('config', 'game_name_rule'), '', self.game)
-                        else:
-                            safe_game_name = re.sub("[^A-Za-z0-9_.\s-]*", '', self.game)
-                        args = ' -o ' + ' "' + self.config.get('config', 'path') + self.channel_name + ' - ' + \
-                               safe_game_name + ' - ' + st2 + '.ts" ' + self.channel + ' ' + self.quality
-                    else:
-                        args = ' -o ' + ' "' + self.config.get('config', 'path') + self.channel_name + ' - ' +\
-                               st2 + '.ts" ' + self.channel + ' ' + self.quality
-                    ChannelParser.prev_enabled = self.thread_id
-                    start_time = time.time()
-                    if start_time - self.last_dl_ended > 10:
-                        if self.game:
-                            print '[' + st + '] starting dl: ' + str(self.thread_id) + ', ' + self.channel_name + ', '\
-                                  + self.game + '\a'
-                        else:
-                            print '[' + st + '] starting dl: ' + str(self.thread_id) + ', ' + self.channel_name + \
-                                  '\a'
-                    args_to_start = livestreamer_path + ' ' + args
-                    startupinfo = STARTUPINFO()
-                    startupinfo.dwFlags |= STARTF_USESHOWWINDOW
-                    startupinfo.wShowWindow = 6
-                    ChannelParser.dling.append(self)
-                    livestreamer_process = Popen(args_to_start, creationflags=CREATE_NEW_CONSOLE,
-                                                 startupinfo=startupinfo)
-                    livestreamer_process.wait()
-                    ChannelParser.dling.remove(self)
-                    self.last_dl_ended = time.time()
-                    diff_time = self.last_dl_ended - start_time
-                    if diff_time < 5:
-                        self.sleep += 180
-                    continue
-                else:
-                    args = self.channel + ' ', self.quality
-                    st = datetime.datetime.now().strftime('%H:%M')
-                    ChannelParser.prev_enabled = self.thread_id
-                    to_print = '[' + st + '] starting stream: ' + str(self.thread_id) + ', ' + self.channel_name + \
-                               ', ' + self.game + '\a'
-                    if self.warning_level > 1:
-                        to_print += '\a'
-                    print to_print
-                    livestreamer_process = Popen(['livestreamer.exe', args])
-                    livestreamer_process.wait()
-                    st = datetime.datetime.now().strftime('%H:%M')
-                    print '[' + st + '] ending stream: ' + str(self.thread_id) + ', ' + self.channel_name
-                    self.sleep += 10.00
-                    continue
-            elif self.warning_level:
-                if not self.warned:
-                    st = datetime.datetime.now().strftime('%H:%M')
-                    if self.game:
-                        print '[' + st + '] stream started: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' +\
-                              self.game + '\a'
-                    else:
-                        print '[' + st + '] stream started: ' + str(self.thread_id) + ', ' + self.channel_name + '\a'
-                    self.warned = 1
-                    self.sleep += 10
-                else:
-                    self.sleep += self.wait * 10 + 6.00
-            else:
-                if not self.warned:
-                    self.warned = 1
-                    st = datetime.datetime.now().strftime('%H:%M')
-                    if self.game:
-                        print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' +\
-                              self.game
-                    else:
-                        print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel_name
+            self.do_start_stream()
 
-                self.sleep += self.wait * 10 + 2.00
-                continue
+        #outside while loop, meaning thread end
         print 'thread ' + str(self.thread_id) + ' ended, Reason: ' + reason
+
+    def do_start_stream(self):
+        if not self.warned:
+            ChannelParser.prev_start = self.thread_id
+        if not self in ChannelParser.streaming:
+            ChannelParser.streaming.append(self)
+        self.warned_quality = 0
+        if self.warning_level > 1 or self.start_stream:
+            if ChannelParser.dl_stream == 1:
+                if self.config.has_option('config', 'livestreamer'):
+                    livestreamer_path = self.config.get('config', 'livestreamer')
+                else:
+                    livestreamer_path = 'livestreamer.exe'
+                st = datetime.datetime.now().strftime('%H:%M')
+                st2 = datetime.datetime.now().strftime('%d-%m-%Y %H-%M')
+                if self.game:
+                    if self.config.has_option('config', 'game_name_rule'):
+                        safe_game_name = re.sub(self.config.get('config', 'game_name_rule'), '', self.game)
+                    else:
+                        safe_game_name = re.sub("[^A-Za-z0-9_.\s-]*", '', self.game)
+                    args = ' -o ' + ' "' + self.config.get('config', 'path') + self.channel_name + ' - ' + \
+                           safe_game_name + ' - ' + st2 + '.ts" ' + self.channel + ' ' + self.quality
+                else:
+                    args = ' -o ' + ' "' + self.config.get('config', 'path') + self.channel_name + ' - ' +\
+                           st2 + '.ts" ' + self.channel + ' ' + self.quality
+                ChannelParser.prev_enabled = self.thread_id
+                start_time = time.time()
+                if start_time - self.last_dl_ended > 10:
+                    if self.game:
+                        print '[' + st + '] starting dl: ' + str(self.thread_id) + ', ' + self.channel_name + ', '\
+                              + self.game + '\a'
+                    else:
+                        print '[' + st + '] starting dl: ' + str(self.thread_id) + ', ' + self.channel_name + \
+                              '\a'
+                args_to_start = livestreamer_path + ' ' + args
+                startupinfo = STARTUPINFO()
+                startupinfo.dwFlags |= STARTF_USESHOWWINDOW
+                startupinfo.wShowWindow = 6
+                ChannelParser.dling.append(self)
+                livestreamer_process = Popen(args_to_start, creationflags=CREATE_NEW_CONSOLE,
+                                             startupinfo=startupinfo)
+                livestreamer_process.wait()
+                ChannelParser.dling.remove(self)
+                self.last_dl_ended = time.time()
+                diff_time = self.last_dl_ended - start_time
+                if diff_time < 5:
+                    self.sleep += 180
+                return
+            else:
+                args = self.channel + ' ', self.quality
+                st = datetime.datetime.now().strftime('%H:%M')
+                ChannelParser.prev_enabled = self.thread_id
+                to_print = '[' + st + '] starting stream: ' + str(self.thread_id) + ', ' + self.channel_name + \
+                           ', ' + self.game + '\a'
+                if self.warning_level > 1:
+                    to_print += '\a'
+                print to_print
+                livestreamer_process = Popen(['livestreamer.exe', args])
+                livestreamer_process.wait()
+                st = datetime.datetime.now().strftime('%H:%M')
+                print '[' + st + '] ending stream: ' + str(self.thread_id) + ', ' + self.channel_name
+                self.sleep += 10.00
+                return
+        elif self.warning_level:
+            if not self.warned:
+                st = datetime.datetime.now().strftime('%H:%M')
+                if self.game:
+                    print '[' + st + '] stream started: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' +\
+                          self.game + '\a'
+                else:
+                    print '[' + st + '] stream started: ' + str(self.thread_id) + ', ' + self.channel_name + '\a'
+                self.warned = 1
+                self.sleep += 10
+            else:
+                self.sleep += self.wait * 10 + 6.00
+        else:
+            if not self.warned:
+                self.warned = 1
+                st = datetime.datetime.now().strftime('%H:%M')
+                if self.game:
+                    print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' +\
+                          self.game
+                else:
+                    print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel_name
+
+            self.sleep += self.wait * 10 + 2.00
+            return
 
     def check_for_stream(self):
         url = 'https://api.twitch.tv/kraken/streams/' + self.channel.split('/')[-1]
