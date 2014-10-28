@@ -176,14 +176,15 @@ class Channel(threading.Thread):
         connection = False
         parsed_json = False
         i = 0
-        while not parsed_json and i < 4:
+        while not parsed_json and i < 6:
             try:
                 response = urllib2.urlopen(url).read()
                 connection = True
             except:
                 i += 1
                 if ChannelParser.printLevel == 2:
-                    print 'warning: failed ' + str(i) + ' try at connecting to ' + self.channel
+                    st = datetime.datetime.now().strftime('%H:%M')
+                    print '[' + st +'] warning: failed ' + str(i) + ' try at connecting to ' + self.channel
                 time.sleep(1+i)
                 continue
             try:
@@ -192,7 +193,8 @@ class Channel(threading.Thread):
             except:
                 i += 1
                 if ChannelParser.printLevel == 2:
-                    print 'warning: failed ' + str(i) + ' try at parsing respone from' + self.channel
+                    st = datetime.datetime.now().strftime('%H:%M')
+                    print '[' + st +'] warning: failed ' + str(i) + ' try at parsing respone from' + self.channel
                 time.sleep(1+i)
                 continue
         if not connection:
