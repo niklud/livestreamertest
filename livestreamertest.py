@@ -183,7 +183,7 @@ class Channel(threading.Thread):
             except:
                 i += 1
                 if ChannelParser.printLevel == 2:
-                    print 'warning: failed ' + str(i) + ' try at connecting'
+                    print 'warning: failed ' + str(i) + ' try at connecting to ' + self.channel
                 time.sleep(1+i)
                 continue
             try:
@@ -192,7 +192,7 @@ class Channel(threading.Thread):
             except:
                 i += 1
                 if ChannelParser.printLevel == 2:
-                    print 'warning: failed ' + str(i) + ' try at parsing'
+                    print 'warning: failed ' + str(i) + ' try at parsing respone from' + self.channel
                 time.sleep(1+i)
                 continue
         if not connection:
