@@ -176,20 +176,24 @@ class Channel(threading.Thread):
         connection = False
         parsed_json = False
         i = 0
-        while not parsed_json and i < 2:
+        while not parsed_json and i < 4:
             try:
                 response = urllib2.urlopen(url).read()
                 connection = True
             except:
                 i += 1
-                time.sleep(2)
+                if ChannelParser.printLevel == 2:
+                    print 'warning: failed ' + str(i) + ' try at connecting'
+                time.sleep(1+i)
                 continue
             try:
                 stream_json = json.loads(response)
                 parsed_json = True
             except:
                 i += 1
-                time.sleep(2)
+                if ChannelParser.printLevel == 2:
+                    print 'warning: failed ' + str(i) + ' try at parsing'
+                time.sleep(1+i)
                 continue
         if not connection:
             print 'Error: failed to open connection to ' + self.channel + ', ' + str(self.thread_id)
