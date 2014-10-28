@@ -198,9 +198,11 @@ class Channel(threading.Thread):
                 time.sleep(1+i)
                 continue
         if not connection:
-            print 'Error: failed to open connection to ' + self.channel + ', ' + str(self.thread_id)
+            st = datetime.datetime.now().strftime('%H:%M')
+            print '[' + st +'] Error: failed to open connection to ' + self.channel + ', ' + str(self.thread_id)
         if connection and not parsed_json:
-            print 'Error: failed to parse twitch response to json ' + self.channel + ', ' + str(self.thread_id)
+            st = datetime.datetime.now().strftime('%H:%M')
+            print '[' + st +'] Error: failed to parse twitch response to json ' + self.channel + ', ' + str(self.thread_id)
         return stream_json
 
     def update_vars(self):
