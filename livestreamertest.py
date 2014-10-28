@@ -51,7 +51,10 @@ class Channel(threading.Thread):
             if not self.config.has_section(str(self.thread_id)):
                 reason = 'config.has_section == False'
                 break
+
+            #check for updated vars
             self.update_vars()
+
             #sleep for set amount of time
             if self.do_sleep():
                 continue
@@ -168,7 +171,7 @@ class Channel(threading.Thread):
         connection = False
         parsed_json = False
         i = 0
-        while not connection and i < 2:
+        while not parsed_json and i < 2:
             try:
                 response = urllib2.urlopen(url).read()
                 connection = True
