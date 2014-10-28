@@ -65,11 +65,8 @@ class Channel(threading.Thread):
 
             #check if stream is available
             if not 'stream' in keys:
-                if keys == '':
-                    continue
-                else:
-                    print 'warning: loading ' + keys
-                    continue
+                self.sleep += 20
+                continue
             if not keys['stream']:
                 self.no_stream_avail()
                 continue
@@ -171,7 +168,7 @@ class Channel(threading.Thread):
         connection = False
         parsed_json = False
         i = 0
-        while not connection or i > 2:
+        while not connection and i < 2:
             try:
                 response = urllib2.urlopen(url).read()
                 connection = True
@@ -187,9 +184,9 @@ class Channel(threading.Thread):
                 time.sleep(2)
                 continue
         if not connection:
-            print 'Error: failed to open connection to ' + self.channel
+            print 'Error: failed to open connection to ' + self.channel + ', ' + str(self.thread_id)
         if connection and not parsed_json:
-            print 'Error: failed to parse twitch response to json ' + self.channel
+            print 'Error: failed to parse twitch response to json ' + self.channel + ', ' + str(self.thread_id)
         return stream_json
 
     def update_vars(self):
