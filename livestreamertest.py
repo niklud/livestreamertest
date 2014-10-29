@@ -247,7 +247,7 @@ class Channel(threading.Thread):
             self.currently_dling = 0
         self.streaming = 0
         self.warned = 0
-        self.sleep += (self.wait * 10 + 6.00)
+        self.sleep += (self.wait * 10 + 2.00)
 
 
 class ChannelParser:
@@ -386,6 +386,15 @@ class MainClass:
         newThreads = ChannelParser.newThreads
         ChannelParser.updateVars()
         ChannelParser.toString()
+
+        # #resize window
+        if config.has_option('config', 'window_width') and config.has_option('config', 'window_height'):
+            os_size = "mode con cols=" + config.get('config', 'window_width') + " lines=" + config.get('config',
+                                                                                                        'window_height')
+            os.system(os_size)
+        else:
+            os.system("mode con cols=75 lines=65")
+
         threads = []
         IOThread = BasicIO(0)
         IOThread.start()
