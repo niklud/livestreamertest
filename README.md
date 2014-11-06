@@ -37,3 +37,6 @@ This application requires the following to be installed on your system:
 
 ### Additional notes
 We made this first and foremost for personal use as the need presented itself, but we're open to suggestions on changes and improvement ;P
+
+#### Aditionally Additional notes
+Acca is too lazy to remove this comment about him being lazy ~
