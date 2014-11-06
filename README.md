@@ -12,7 +12,7 @@ In addition to seeing when people go live, it supports the following:
 
 ###Available commands and parameters
 
-| Command                                                    | Descritpion                                    |
+| Command                                                    | Description                                    |
 |:-----------------------------------------------------------|:-----------------------------------------------|
 | start&#124;enable [section]                                | start stream                                   |
 | s                                                          | start last online stream                       |
