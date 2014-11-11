@@ -392,8 +392,6 @@ class MainClass:
             os_size = "mode con cols=" + config.get('config', 'window_width') + " lines=" + config.get('config',
                                                                                                         'window_height')
             os.system(os_size)
-        else:
-            os.system("mode con cols=75 lines=65")
 
         threads = []
         IOThread = BasicIO(0)
