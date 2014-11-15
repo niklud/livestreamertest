@@ -162,8 +162,12 @@ class Channel(threading.Thread):
                 self.warned = 1
                 st = datetime.datetime.now().strftime('%H:%M')
                 if self.game:
-                    print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' +\
-                          self.game
+                    try:
+                        print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' +\
+                              self.game
+                    except:
+                        print "Derped charset on " + self.channel_name
+                        return
                 else:
                     print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel_name
 
