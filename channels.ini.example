@@ -3,7 +3,8 @@ path = D:\Twitch\
 game_name_rule = [^A-Za-z0-9_.\s-]*
 window_width = 75
 window_height = 65
-timestamp_format = HH:MM:SS
+#time_format = %H-%M
+#livestreamer = path/to/binary
 
 [defaults]
 wait = 4

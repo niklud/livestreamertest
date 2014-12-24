@@ -96,7 +96,13 @@ class Channel(threading.Thread):
                 else:
                     livestreamer_path = 'livestreamer.exe'
                 st = datetime.datetime.now().strftime('%H:%M')
-                st2 = datetime.datetime.now().strftime('%d-%m-%Y %H-%M')
+                try:
+                    if self.config.has_option('config', 'time_format'):
+                        st2 = datetime.datetime.now().strftime('%d-%m-%Y ' + self.config.get('config', 'time_format'))
+                    else:
+                        st2 = datetime.datetime.now().strftime('%d-%m-%Y %H-%M')
+                except:
+                    st2 = datetime.datetime.now().strftime('%d-%m-%Y %H-%M')
                 if self.game:
                     if self.config.has_option('config', 'game_name_rule'):
                         safe_game_name = re.sub(self.config.get('config', 'game_name_rule'), '', self.game)
