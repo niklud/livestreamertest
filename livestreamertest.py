@@ -166,7 +166,7 @@ class Channel(threading.Thread):
                         print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' +\
                               self.game
                     except:
-                        print "Derped charset on " + self.channel_name
+                        print "ERROR: Bad charset handling (probably Unicode) occured on " + self.channel_name
                         return
                 else:
                     print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel_name
