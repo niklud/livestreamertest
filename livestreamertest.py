@@ -127,8 +127,9 @@ class Channel(threading.Thread):
                 startupinfo.dwFlags |= STARTF_USESHOWWINDOW
                 startupinfo.wShowWindow = 6
                 ChannelParser.dling.append(self)
-                livestreamer_process = Popen(args_to_start, creationflags=CREATE_NEW_CONSOLE,
-                                             startupinfo=startupinfo)
+                #livestreamer_process = Popen(args_to_start, creationflags=CREATE_NEW_CONSOLE,
+                #                             startupinfo=startupinfo)
+                livestreamer_process = Popen(args_to_start, startupinfo=startupinfo)
                 livestreamer_process.wait()
                 ChannelParser.dling.remove(self)
                 self.last_dl_ended = time.time()
