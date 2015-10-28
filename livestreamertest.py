@@ -9,6 +9,7 @@ import datetime
 import json
 import urllib2
 import re
+import subprocess
 path = os.path.dirname(__file__)
 
 #splitchar = unichr(179);
@@ -123,13 +124,14 @@ class Channel(threading.Thread):
                         print '[' + st + '] starting dl: ' + str(self.thread_id) + ', ' + self.channel_name + \
                               '\a'
                 args_to_start = livestreamer_path + ' ' + args
-                startupinfo = STARTUPINFO()
-                startupinfo.dwFlags |= STARTF_USESHOWWINDOW
-                startupinfo.wShowWindow = 6
-                ChannelParser.dling.append(self)
+                #startupinfo = STARTUPINFO()
+                #startupinfo.dwFlags |= STARTF_USESHOWWINDOW
+                #startupinfo.wShowWindow = 6
+                #ChannelParser.dling.append(self)
                 #livestreamer_process = Popen(args_to_start, creationflags=CREATE_NEW_CONSOLE,
                 #                             startupinfo=startupinfo)
-                livestreamer_process = Popen(args_to_start, startupinfo=startupinfo)
+                devnull = open(os.devnull, 'wb')
+                livestreamer_process = subprocess.Popen(args_to_start,  shell=False, stdout=subprocess.PIPE, stderr=devnull)
                 livestreamer_process.wait()
                 ChannelParser.dling.remove(self)
                 self.last_dl_ended = time.time()
