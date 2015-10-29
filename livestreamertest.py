@@ -130,7 +130,24 @@ class Channel(threading.Thread):
                 ChannelParser.dling.append(self)
                 #livestreamer_process = Popen(args_to_start, creationflags=CREATE_NEW_CONSOLE,
                 #                             startupinfo=startupinfo)
-                log = open('stderr.log', 'wb')
+                log_stderr = False
+                log = ""
+
+                if self.config.has_option('config', 'stderr'):
+                    try:
+                        if self.config.get('config', 'stderr') != "":
+                            log_stderr = True
+                    except IOError as e:
+                        print e.message
+
+                try:
+                    if log_stderr:
+                        log = open(str(self.config.get('config', 'stderr')), 'wb')
+                    else:
+                        log = open(os.devnull, 'wb')
+                except IOError as e:
+                    print e.message
+
                 livestreamer_process = subprocess.Popen(args_to_start,  shell=True, stdout=subprocess.PIPE, stderr=log)
                 livestreamer_process.wait()
                 ChannelParser.dling.remove(self)
