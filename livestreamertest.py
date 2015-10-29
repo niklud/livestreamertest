@@ -127,11 +127,11 @@ class Channel(threading.Thread):
                 #startupinfo = STARTUPINFO()
                 #startupinfo.dwFlags |= STARTF_USESHOWWINDOW
                 #startupinfo.wShowWindow = 6
-                #ChannelParser.dling.append(self)
+                ChannelParser.dling.append(self)
                 #livestreamer_process = Popen(args_to_start, creationflags=CREATE_NEW_CONSOLE,
                 #                             startupinfo=startupinfo)
-                devnull = open(os.devnull, 'wb')
-                livestreamer_process = subprocess.Popen(args_to_start,  shell=False, stdout=subprocess.PIPE, stderr=devnull)
+                log = open('stderr.log', 'wb')
+                livestreamer_process = subprocess.Popen(args_to_start,  shell=True, stdout=subprocess.PIPE, stderr=log)
                 livestreamer_process.wait()
                 ChannelParser.dling.remove(self)
                 self.last_dl_ended = time.time()
