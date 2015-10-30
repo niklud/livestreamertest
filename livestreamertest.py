@@ -2,7 +2,7 @@ from __future__ import division
 import threading
 import time
 import os
-from subprocess import Popen, CREATE_NEW_CONSOLE, STARTUPINFO, STARTF_USESHOWWINDOW
+from subprocess import Popen
 import random
 import ConfigParser
 import datetime
