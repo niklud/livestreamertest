@@ -110,7 +110,7 @@ class Channel(threading.Thread):
                     else:
                         safe_game_name = re.sub("[^A-Za-z0-9_.\s-]*", '', self.game)
                     args = ' -o ' + ' "' + self.config.get('config', 'path') + self.channel_name + ' - ' + \
-                           safe_game_name + ' - ' + st2 + '.ts" ' + self.channel + ' ' + self.quality
+                           st2 + ' - ' + safe_game_name + '.ts" ' + self.channel + ' ' + self.quality
                 else:
                     args = ' -o ' + ' "' + self.config.get('config', 'path') + self.channel_name + ' - ' +\
                            st2 + '.ts" ' + self.channel + ' ' + self.quality
