@@ -238,7 +238,10 @@ class Channel(threading.Thread):
     def update_vars(self):
         self.channel = self.config.get(str(self.thread_id), 'channel')
         self.warning_level = int(self.config.get(str(self.thread_id), 'warning level'))
-        self.wait = int(self.config.get(str(self.thread_id), 'wait'))
+        try:
+            self.wait = int(self.config.get(str(self.thread_id), 'wait'))
+        except ConfigParser.NoOptionError:
+            self.wait = int(self.config.get('defaults', 'wait'))
         self.quality = self.config.get(str(self.thread_id), 'quality')
         if self.config.has_option(str(self.thread_id), 'name'):
             self.channel_name = self.config.get(str(self.thread_id), 'name')
