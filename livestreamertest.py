@@ -149,7 +149,7 @@ class Channel(threading.Thread):
                     print e.message
 
                 livestreamer_process = subprocess.Popen(args_to_start,  shell=True, stdout=subprocess.PIPE, stderr=log)
-                livestreamer_process.wait()
+                livestreamer_process.communicate()
                 ChannelParser.dling.remove(self)
                 self.last_dl_ended = time.time()
                 diff_time = self.last_dl_ended - start_time
@@ -261,7 +261,6 @@ class Channel(threading.Thread):
             self.sleep += 2.00
         #do needed sleep
         if self.sleep >= 2.00:
-            time.sleep(2.25 + random.uniform(-0.25, 0.25))
             self.sleep -= 2.00
             return True
         return False
@@ -277,7 +276,7 @@ class Channel(threading.Thread):
             self.currently_dling = 0
         self.streaming = 0
         self.warned = 0
-        self.sleep += (self.wait * 10 + 2.00)
+        self.sleep += (self.wait * 4 + 2.00)
 
 
 class ChannelParser:
