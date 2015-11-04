@@ -262,8 +262,10 @@ class Channel(threading.Thread):
         #do needed sleep
         if self.sleep >= 2.00:
             self.sleep -= 2.00
-            return True
-        return False
+        else:
+            return False
+        time.sleep(2.00)
+        return True
 
     def no_stream_avail(self):
         if self in ChannelParser.streaming:
@@ -366,7 +368,7 @@ class ChannelParser:
         config = ChannelParser.config
         for i in range(0, ChannelParser.currentSize + 1):
             if config.has_section(str(i)):
-                print 'Section ' + str(i) + ', channel ' + config.get(str(i), 'channel')
+                print 'Section ' + str("%02d" % i) + ', channel ' + config.get(str(i), 'channel')
 
     @staticmethod
     def listAll():
@@ -374,7 +376,7 @@ class ChannelParser:
         print 'Section ' + splitchar + ' Enabled ' + splitchar + ' Wait ' + splitchar + ' Quality ' + splitchar + ' Channel'
         for i in range(0, ChannelParser.currentSize + 1):
             if config.has_section(str(i)):
-                print '    ' + str(i) + '    ' + splitchar + '    ' + config.get(str(i), 'warning level') + '   ' + splitchar + '   ' + config.get(
+                print '    ' + "%02d" % i + '    ' + splitchar + '    ' + config.get(str(i), 'warning level') + '   ' + splitchar + '   ' + config.get(
                     str(i), 'wait') + '   ' + splitchar + '   ' + config.get(str(i), 'quality') + '   ' + splitchar + '   ' + config.get(str(i),
                                                                                                          'channel')
 
