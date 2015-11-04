@@ -102,6 +102,11 @@ class Channel(threading.Thread):
                         st2 = datetime.datetime.now().strftime('%Y-%m-%d ' + self.config.get('config', 'time_format'))
                     else:
                         st2 = datetime.datetime.now().strftime('%Y-%m-%d %H-%M')
+                    if self.config.has_option('config', 'date_format'):
+                        is_it_good = self.config.get('config', 'date_format')
+                        if is_it_good != '%Y-%m-%d':
+                            print "https://xkcd.com/1179/"
+                            exit(1)
                 except:
                     st2 = datetime.datetime.now().strftime('%Y-%m-%d %H-%M')
                 if self.game:
