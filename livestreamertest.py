@@ -109,10 +109,22 @@ class Channel(threading.Thread):
                         safe_game_name = re.sub(self.config.get('config', 'game_name_rule'), '', self.game)
                     else:
                         safe_game_name = re.sub("[^A-Za-z0-9_.\s-]*", '', self.game)
-                    args = ' -o ' + ' "' + self.config.get('config', 'path') + self.channel_name + ' - ' + \
+                     # TODO: Implement properly
+                    if self.config.has_option(str(self.thread_id), 'path'):
+                        # channel_path = self.config.get(str(self.thread_id), 'path')
+                        args = ' -o ' + ' "' + self.config.get('config', 'path') + self.config.get(str(self.thread_id), 'path') + self.channel_name + ' - ' + \
+                           st2 + ' - ' + safe_game_name + '.ts" ' + self.channel + ' ' + self.quality
+                        # print args
+                    else:
+                        args = ' -o ' + ' "' + self.config.get('config', 'path') + self.channel_name + ' - ' + \
                            st2 + ' - ' + safe_game_name + '.ts" ' + self.channel + ' ' + self.quality
                 else:
-                    args = ' -o ' + ' "' + self.config.get('config', 'path') + self.channel_name + ' - ' +\
+                    if self.config.has_option(str(self.thread_id), 'path'):
+                        args = ' -o ' + ' "' + self.config.get('config', 'path') + self.config.get(str(self.thread_id), 'path') + self.channel_name + ' - ' +\
+                           st2 + '.ts" ' + self.channel + ' ' + self.quality
+                        # print args
+                    else:
+                        args = ' -o ' + ' "' + self.config.get('config', 'path') + self.channel_name + ' - ' +\
                            st2 + '.ts" ' + self.channel + ' ' + self.quality
                 ChannelParser.prev_enabled = self.thread_id
                 start_time = time.time()
@@ -224,7 +236,7 @@ class Channel(threading.Thread):
                 i += 1
                 if ChannelParser.printLevel == 2:
                     st = datetime.datetime.now().strftime('%H:%M')
-                    print '[' + st +'] warning: failed ' + str(i) + ' try at parsing respone from' + self.channel
+                    print '[' + st +'] warning: failed ' + str(i) + ' try at parsing response from' + self.channel
                 time.sleep(1+i)
                 continue
         if not connection:
@@ -420,6 +432,20 @@ class MainClass:
         newThreads = ChannelParser.newThreads
         ChannelParser.updateVars()
         ChannelParser.toString()
+
+        # TODO: Find better way to do this
+        # Create sub directories for streams if given
+        for i in range(0, ChannelParser.currentSize):
+            if config.has_option(str(i), 'path'):
+                cpath = str(config.get(str(i), 'path'))
+                if config.has_option('config', 'path'):
+                    rpath = str(config.get('config', 'path'))
+                else:
+                    rpath = ""
+                p = str(rpath + cpath.strip(os.sep))
+                if not os.path.exists(p):
+                    os.makedirs(p)
+                    print "Created channel dir for section " + str(i) + ": " + p
 
         # #resize window
         if config.has_option('config', 'window_width') and config.has_option('config', 'window_height'):
