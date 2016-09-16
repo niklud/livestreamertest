@@ -2,6 +2,7 @@ from __future__ import division
 import threading
 import time
 import os
+import urllib
 from subprocess import Popen
 import random
 import ConfigParser
@@ -10,9 +11,10 @@ import json
 import urllib2
 import re
 import subprocess
+
 path = os.path.dirname(__file__)
 
-#splitchar = unichr(179);
+# splitchar = unichr(179);
 splitchar = '|'
 
 
@@ -43,45 +45,49 @@ class Channel(threading.Thread):
         print 'added: Section ' + str(self.thread_id) + ', channel ' + self.config.get(str(self.thread_id), 'channel')
 
         while True:
-            #do main() want you dead?
+            # do main() want you dead?
             if MainClass.die:
                 reason = 'die == true'
                 break
 
-            #is section still in config
+            # is section still in config
             if not self.config.has_section(str(self.thread_id)):
                 reason = 'config.has_section == False'
                 break
 
-            #check for updated vars
+            # check for updated vars
             self.update_vars()
 
-            #sleep for set amount of time
+            # sleep for set amount of time
             if self.do_sleep():
                 continue
 
-            #check for available stream
+            # check for available stream
             keys = self.check_for_stream()
-
 
             if ChannelParser.printLevel == 1:
                 print 'checked: ' + str(self.thread_id) + ', ' + self.channel
 
-            #check if stream is available
-            if not 'stream' in keys:
+            # check if stream is available
+            print "%s keys: %s" % (self.channel_name, keys)
+            if 'self' not in keys:
+                print "if u'self' not in keys: " + self.channel_name
                 self.sleep += 20
                 continue
-            if not keys['stream']:
+            if not keys['self']:
+                print "if not keys[u'self']: " + self.channel_name
                 self.no_stream_avail()
                 continue
             else:
+                print "##########################" + self.channel_name + "##########################"
                 self.streaming = 1
-                self.game = keys['stream']['game']
+                self.game = keys['self']['game']
 
-            #start or ignore stream
+            # start or ignore stream
+            print self.channel_name + "Starting stream.."
             self.do_start_stream()
 
-        #outside while loop, meaning thread end
+        # outside while loop, meaning thread end
         print 'thread ' + str(self.thread_id) + ' ended, Reason: ' + reason
 
     def do_start_stream(self):
@@ -109,38 +115,40 @@ class Channel(threading.Thread):
                         safe_game_name = re.sub(self.config.get('config', 'game_name_rule'), '', self.game)
                     else:
                         safe_game_name = re.sub("[^A-Za-z0-9_.\s-]*", '', self.game)
-                     # TODO: Implement properly
+                        # TODO: Implement properly
                     if self.config.has_option(str(self.thread_id), 'path'):
                         # channel_path = self.config.get(str(self.thread_id), 'path')
-                        args = ' -o ' + ' "' + self.config.get('config', 'path') + self.config.get(str(self.thread_id), 'path') + self.channel_name + ' - ' + \
-                           st2 + ' - ' + safe_game_name + '.ts" ' + self.channel + ' ' + self.quality
+                        args = ' -o ' + ' "' + self.config.get('config', 'path') + self.config.get(str(self.thread_id),
+                                                                                                   'path') + self.channel_name + ' - ' + \
+                               st2 + ' - ' + safe_game_name + '.ts" ' + self.channel + ' ' + self.quality
                         # print args
                     else:
                         args = ' -o ' + ' "' + self.config.get('config', 'path') + self.channel_name + ' - ' + \
-                           st2 + ' - ' + safe_game_name + '.ts" ' + self.channel + ' ' + self.quality
+                               st2 + ' - ' + safe_game_name + '.ts" ' + self.channel + ' ' + self.quality
                 else:
                     if self.config.has_option(str(self.thread_id), 'path'):
-                        args = ' -o ' + ' "' + self.config.get('config', 'path') + self.config.get(str(self.thread_id), 'path') + self.channel_name + ' - ' +\
-                           st2 + '.ts" ' + self.channel + ' ' + self.quality
+                        args = ' -o ' + ' "' + self.config.get('config', 'path') + self.config.get(str(self.thread_id),
+                                                                                                   'path') + self.channel_name + ' - ' + \
+                               st2 + '.ts" ' + self.channel + ' ' + self.quality
                         # print args
                     else:
-                        args = ' -o ' + ' "' + self.config.get('config', 'path') + self.channel_name + ' - ' +\
-                           st2 + '.ts" ' + self.channel + ' ' + self.quality
+                        args = ' -o ' + ' "' + self.config.get('config', 'path') + self.channel_name + ' - ' + \
+                               st2 + '.ts" ' + self.channel + ' ' + self.quality
                 ChannelParser.prev_enabled = self.thread_id
                 start_time = time.time()
                 if start_time - self.last_dl_ended > 10:
                     if self.game:
-                        print '[' + st + '] starting dl: ' + str(self.thread_id) + ', ' + self.channel_name + ', '\
+                        print '[' + st + '] starting dl: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' \
                               + self.game + '\a'
                     else:
                         print '[' + st + '] starting dl: ' + str(self.thread_id) + ', ' + self.channel_name + \
                               '\a'
                 args_to_start = livestreamer_path + ' ' + args
-                #startupinfo = STARTUPINFO()
-                #startupinfo.dwFlags |= STARTF_USESHOWWINDOW
-                #startupinfo.wShowWindow = 6
+                # startupinfo = STARTUPINFO()
+                # startupinfo.dwFlags |= STARTF_USESHOWWINDOW
+                # startupinfo.wShowWindow = 6
                 ChannelParser.dling.append(self)
-                #livestreamer_process = Popen(args_to_start, creationflags=CREATE_NEW_CONSOLE,
+                # livestreamer_process = Popen(args_to_start, creationflags=CREATE_NEW_CONSOLE,
                 #                             startupinfo=startupinfo)
                 log_stderr = False
                 log = ""
@@ -160,7 +168,7 @@ class Channel(threading.Thread):
                 except IOError as e:
                     print e.message
 
-                livestreamer_process = subprocess.Popen(args_to_start,  shell=True, stdout=subprocess.PIPE, stderr=log)
+                livestreamer_process = subprocess.Popen(args_to_start, shell=True, stdout=subprocess.PIPE, stderr=log)
                 livestreamer_process.communicate()
                 ChannelParser.dling.remove(self)
                 self.last_dl_ended = time.time()
@@ -187,7 +195,7 @@ class Channel(threading.Thread):
             if not self.warned:
                 st = datetime.datetime.now().strftime('%H:%M')
                 if self.game:
-                    print '[' + st + '] stream started: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' +\
+                    print '[' + st + '] stream started: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' + \
                           self.game + '\a'
                 else:
                     print '[' + st + '] stream started: ' + str(self.thread_id) + ', ' + self.channel_name + '\a'
@@ -201,7 +209,7 @@ class Channel(threading.Thread):
                 st = datetime.datetime.now().strftime('%H:%M')
                 if self.game:
                     try:
-                        print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' +\
+                        print '[' + st + '] ignored: ' + str(self.thread_id) + ', ' + self.channel_name + ', ' + \
                               self.game
                     except:
                         print "ERROR: Bad charset handling (probably Unicode) occured on " + self.channel_name
@@ -213,38 +221,67 @@ class Channel(threading.Thread):
             return
 
     def check_for_stream(self):
-        url = 'https://api.twitch.tv/kraken/streams/' + self.channel.split('/')[-1]
+        url = 'https://api.twitch.tv/kraken/channels/' + self.channel.split('/')[-1]
         stream_json = ''
+        if self.config.has_option("config", "client_id"):
+            client_id = self.config.get("config", "client_id")
+        else:
+            print "ERROR: Missing *required* twitch client_id in config file!"
+            client_id = None
+        headers = {'Accept': 'application/vnd.twitchtv.v3+json', 'Client-ID': client_id}
         connection = False
         parsed_json = False
         i = 0
         while not parsed_json and i < 6:
             try:
-                response = urllib2.urlopen(url).read()
+                # data = urllib.urlencode(values)
+                request = urllib2.Request(url, headers=headers)
+                ratelimited = True
+                response = None
+                while ratelimited:
+                    try:
+                        response = urllib2.urlopen(request)
+                        ratelimited = False
+                    except urllib2.HTTPError as e:
+                        i += 1
+
+                        print "HTTP Error 400: Bad Request "
+                        print e.url
+                        print e.headers
+
+                        if ChannelParser.printLevel == 2:
+                            st = datetime.datetime.now().strftime('%H:%M')
+                            print '[' + st + '] warning: failed ' + str(i) + ' try at connecting to ' + self.channel_name + \
+                                  ": HTTP Error 400: Bad Request -- sleeping for %s seconds.." % i
+                        time.sleep(i)
+                page = response.read()
+                print "%s page: %s" % (self.channel_name, page)
                 connection = True
             except:
                 i += 1
                 if ChannelParser.printLevel == 2:
                     st = datetime.datetime.now().strftime('%H:%M')
-                    print '[' + st +'] warning: failed ' + str(i) + ' try at connecting to ' + self.channel
-                time.sleep(1+i)
-                continue
+                    print '[' + st + '] warning: failed ' + str(i) + ' try at connecting to ' + self.channel
+                time.sleep(1 + i)
+                raise
+                # continue
             try:
-                stream_json = json.loads(response)
+                stream_json = json.loads(page)
                 parsed_json = True
             except:
                 i += 1
                 if ChannelParser.printLevel == 2:
                     st = datetime.datetime.now().strftime('%H:%M')
-                    print '[' + st +'] warning: failed ' + str(i) + ' try at parsing response from' + self.channel
-                time.sleep(1+i)
+                    print '[' + st + '] warning: failed ' + str(i) + ' try at parsing response from' + self.channel
+                time.sleep(1 + i)
                 continue
         if not connection:
             st = datetime.datetime.now().strftime('%H:%M')
-            print '[' + st +'] Error: failed to open connection to ' + self.channel + ', ' + str(self.thread_id)
+            print '[' + st + '] Error: failed to open connection to ' + self.channel + ', ' + str(self.thread_id)
         if connection and not parsed_json:
             st = datetime.datetime.now().strftime('%H:%M')
-            print '[' + st +'] Error: failed to parse twitch response to json ' + self.channel + ', ' + str(self.thread_id)
+            print '[' + st + '] Error: failed to parse twitch response to json ' + self.channel + ', ' + str(
+                self.thread_id)
         return stream_json
 
     def update_vars(self):
@@ -271,10 +308,10 @@ class Channel(threading.Thread):
             self.currently_dling = 0
             if self.warning_level == 2:
                 self.sleep += 21600
-        #do main() want all channels to sleep
+        # do main() want all channels to sleep
         if ChannelParser.sleep:
             self.sleep += 2.00
-        #do needed sleep
+        # do needed sleep
         if self.sleep >= 2.00:
             self.sleep -= 2.00
         else:
@@ -311,7 +348,6 @@ class ChannelParser:
     prev_enabled = -1
     dl_stream = 1
 
-
     @staticmethod
     def updateCurrentSize():
         config = ChannelParser.config
@@ -339,7 +375,7 @@ class ChannelParser:
                 return i
 
     @staticmethod
-    def updateVars():  #load channels from file
+    def updateVars():  # load channels from file
         ChannelParser.config.read('channels.ini')
         ChannelParser.currentSize = ChannelParser.updateCurrentSize()
         ChannelParser.nextSection = ChannelParser.updateNextSection()
@@ -386,24 +422,23 @@ class ChannelParser:
                 print 'Section ' + str("%02d" % i) + ', channel ' + config.get(str(i), 'channel')
 
     @staticmethod
-    def listAll():
+    def list_all():
         config = ChannelParser.config
         print 'Section ' + splitchar + ' Enabled ' + splitchar + ' Wait ' + splitchar + ' Quality ' + splitchar + ' Channel'
         for i in range(0, ChannelParser.currentSize + 1):
             if config.has_section(str(i)):
-                print '    ' + "%02d" % i + '    ' + splitchar + '    ' + config.get(str(i), 'warning level') + '   ' + splitchar + '   ' + config.get(
-                    str(i), 'wait') + '   ' + splitchar + '   ' + config.get(str(i), 'quality') + '   ' + splitchar + '   ' + config.get(str(i),
-                                                                                                         'channel')
+                print '    ' + "%02d" % i + '    ' + splitchar + '    ' + config.get(str(i), 'warning level') + '   ' \
+                      + splitchar + '   ' + config.get(str(i), 'wait') + '   ' + splitchar + '   ' + config.get(str(i),
+                      'quality') + '   ' + splitchar + '   ' + config.get(str(i), 'channel')
 
     @staticmethod
-    def listStreams():
+    def list_streams():
         print 'currently streaming:'
         for i in ChannelParser.streaming:
             if i.game:
                 print 'Section ' + str(i.thread_id) + ', ' + i.channel_name + ', Playing: ' + i.game
             else:
                 print 'Section ' + str(i.thread_id) + ', ' + i.channel_name
-
 
     @staticmethod
     def list_dl():
@@ -413,7 +448,6 @@ class ChannelParser:
                 print 'Section ' + str(i.thread_id) + ', ' + i.channel_name + ', Playing: ' + i.game
             else:
                 print 'Section ' + str(i.thread_id) + ', ' + i.channel_name
-
 
     @staticmethod
     def toString():
@@ -450,27 +484,29 @@ class MainClass:
         # #resize window
         if config.has_option('config', 'window_width') and config.has_option('config', 'window_height'):
             os_size = "mode con cols=" + config.get('config', 'window_width') + " lines=" + config.get('config',
-                                                                                                        'window_height')
+                                                                                                       'window_height')
             os.system(os_size)
 
         threads = []
         IOThread = BasicIO(0)
         IOThread.start()
-        for i in range(0, ChannelParser.currentSize):  #new threads for all sections
+        for i in range(0, ChannelParser.currentSize):  # new threads for all sections
             if config.has_section(str(i)):
+                # print "threads sleeping for 3 sec.."
+                time.sleep(1)
                 tempThread = Channel(i)
                 tempThread.start()
                 threads.append(tempThread)
-        try:  #keep main() running, updating channel threads and creating new threads
+        try:  # keep main() running, updating channel threads and creating new threads
             while not MainClass.die:
                 time.sleep(2)
-#                ChannelParser.updateVars()
+                #                ChannelParser.updateVars()
                 while newThreads:  # while there are sections that not have threads
                     i = newThreads.pop(0)
                     tempThread = Channel(i)
                     tempThread.start()
                     threads.append(tempThread)
-        except:  #kill threads
+        except:  # kill threads
             MainClass.die = 1
             raise
 
@@ -510,11 +546,11 @@ class BasicIO(threading.Thread):
             elif wordOne == 'list':
                 if rest:
                     if rest[0] == 'streams':
-                        ChannelParser.listStreams()
+                        ChannelParser.list_streams()
                     elif rest[0] == 'dl':
                         ChannelParser.list_dl()
                     else:
-                        ChannelParser.listAll()
+                        ChannelParser.list_all()
                 else:
                     ChannelParser.list()
             elif wordOne == 'remove':
@@ -569,4 +605,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
